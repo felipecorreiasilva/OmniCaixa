@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/productController';
 import multer from 'multer';
-import uploadConfig from '../config/upload';
+import uploadProductsConfig from '../config/uploadProducts';
 
 const router = Router();
-const upload = multer(uploadConfig);
+const uploadProduct = multer(uploadProductsConfig);
 
 // Rota para listar produtos (GET /products)
 router.get('/products', ProductController.getProducts);
@@ -13,7 +13,7 @@ router.get('/products', ProductController.getProducts);
 router.get('/products/:id', ProductController.getProductById);
 
 // Rota para cadastrar um produto (POST /products)
-router.post('/products', upload.single('image'), ProductController.createProduct);
+router.post('/products', uploadProduct.single('image'), ProductController.createProduct);
 
 // Rota para atualizar um produto (PUT /products/:id)
 router.put('/products/:id', ProductController.updateProduct);

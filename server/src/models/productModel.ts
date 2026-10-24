@@ -33,15 +33,21 @@ export const ProductModel = {
     return { id: result.insertId, ...product };
   },
 
-  async update(id: number, product: Product): Promise<Product | null> {
-    const [result] = await db.execute<ResultSetHeader>(
-        'UPDATE products SET name = ?, price = ?, stock = ?, category = ?, image_url = ? WHERE id = ?',
-        [product.name, product.price, product.stock, product.category || 'Geral', product.image_url || null, id]);
-        if (result) {
-            return { id, ...product };
+  async update(id: number, userData: { name?: string; email?: string; role?: string; image_url?: string | null }) {
+        const { name, email, role, image_url } = userData;
+
+        const [result] = await db.execute<ResultSetHeader>(
+            'UPDATE users SET name = ?, email = ?, role = ?, image_url = ? WHERE id = ?',
+            [name, email, role, image_url || null, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return null; // Nenhum usuário foi encontrado com esse ID
         }
-    return null;
-  },
+
+        // Retorna o usuário atualizado buscando-o no banco (já sem a senha, conforme padrão do seu model)
+        return await this.findById(id);
+    }
 
   async delete(id: number): Promise<boolean> {
     const [result] = await db.execute<ResultSetHeader>('DELETE FROM products WHERE id = ?', [id]);
