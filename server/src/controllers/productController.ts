@@ -29,12 +29,12 @@ export const ProductController = {
   // Criar um novo produto
   async createProduct(req: Request, res: Response) {
     try {
-      const { name, price, stock, category } = req.body;
+      const { name, price, stock, category, image_url } = req.body;
 
       if (!name || price === undefined) {
         return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
       }
-      const newProduct = await ProductModel.create({ name, price, stock, category });
+      const newProduct = await ProductModel.create({ name, price, stock, category, image_url });
       return res.status(201).json(newProduct);
     } catch (error: any) {
       return res.status(500).json({ error: 'Erro ao criar produto: ' + error.message });
@@ -45,12 +45,12 @@ export const ProductController = {
   async updateProduct(req: Request, res: Response) {
     try {
         const { id } = req.params;
-        const { name, price, stock, category} = req.body;
+        const { name, price, stock, category, image_url } = req.body;
 
         if (!name || price === undefined) {
             return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
         }
-        const updateProduct = await ProductModel.update(Number(id), { name, price, stock, category });
+        const updateProduct = await ProductModel.update(Number(id), { name, price, stock, category, image_url });
         if (!updateProduct) {
             return res.status(404).json({ error: 'Produto não encontrado.' });
         }

@@ -7,6 +7,7 @@ export interface Product {
   price: number;
   stock: number;
   category?: string;
+  image_url?: string;
   created_at?: string;
 }
 
@@ -26,16 +27,16 @@ export const ProductModel = {
 
   async create(product: Product): Promise<Product> {
     const [result] = await db.execute<ResultSetHeader>(
-    'INSERT INTO products (name, price, stock, category) VALUES (?, ?, ?, ?)',
-    [product.name, product.price, product.stock, product.category || 'Geral']
+    'INSERT INTO products (name, price, stock, category, image_url) VALUES (?, ?, ?, ?, ?)',
+    [product.name, product.price, product.stock, product.category || 'Geral', product.image_url || null]
   );
     return { id: result.insertId, ...product };
   },
 
   async update(id: number, product: Product): Promise<Product | null> {
     const [result] = await db.execute<ResultSetHeader>(
-        'UPDATE products SET name = ?, price = ?, stock = ?, category = ? WHERE id = ?',
-        [product.name, product.price, product.stock, product.category || 'Geral', id]);
+        'UPDATE products SET name = ?, price = ?, stock = ?, category = ?, image_url = ? WHERE id = ?',
+        [product.name, product.price, product.stock, product.category || 'Geral', product.image_url || null, id]);
         if (result) {
             return { id, ...product };
         }
