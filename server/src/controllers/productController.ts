@@ -26,13 +26,20 @@ export const ProductController = {
     }
   },
 
-  // Criar um novo produto
+  // Criar um novo produto com suporte a upload de imagem
   async createProduct(req: Request, res: Response) {
     try {
-      const { name, price, stock, category, image_url } = req.body;
+      const { name, price, stock, category } = req.body;
 
       if (!name || price === undefined) {
         return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
+      }
+      // 1. Verifica se um ficheiro de imagem foi enviado pelo Multer
+      let image_url = req.body.image_url || ''; // Mantém caso venha por URL direta
+      if (req.file) {
+        // 2. Constrói a URL pública base do servidor dinamicamente
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        image_url = `${baseUrl}/uploads/${req.file.filename}`;
       }
       const newProduct = await ProductModel.create({ name, price, stock, category, image_url });
       return res.status(201).json(newProduct);
