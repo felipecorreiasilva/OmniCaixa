@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS sales (
     id INT AUTO_INCREMENT PRIMARY KEY,
     total_amount DECIMAL(10, 2) NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
-    amount_paid DECIMAL(10, 2) NOT NULL,
-    `change` DECIMAL(10, 2) NOT NULL,
+    amount_paid DECIMAL(10, 2) NULL,
+    `change` DECIMAL(10, 2) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
