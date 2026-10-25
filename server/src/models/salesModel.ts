@@ -17,53 +17,59 @@ export interface CreateSaleInput {
 
 export const SaleModel = {
     async create(data: CreateSaleInput): Promise<{ success: boolean; saleId: number }> {
-        // 1. Obtém uma conexão dedicada do pool para gerir a transação atômica
         const connection = await db.getConnection();
 
         try {
-            // Inicia a transação
             await connection.beginTransaction();
+
+            // 1. Assegura que os dados principais não são undefined
+            const totalAmount = Number(data.total_amount) || 0;
+            const paymentMethod = data.payment_method || 'Dinheiro';
+            const amountPaid = data.amount_paid !== undefined && data.amount_paid !== null ? Number(data.amount_paid) : null;
+            const saleChange = data.change !== undefined && data.change !== null ? Number(data.change) : 0;
+            const items = Array.isArray(data.items) ? data.items : [];
 
             // 2. Insere o cabeçalho da venda na tabela 'sales'
             const [saleResult] = await connection.execute<ResultSetHeader>(
-                `INSERT INTO sales (total_amount, payment_method, amount_paid, change) VALUES (?, ?, ?, ?)`,
-                [
-                    data.total_amount,
-                    data.payment_method,
-                    data.amount_paid,
-                    data.change
-                ]
+                `INSERT INTO sales (total_amount, payment_method, amount_paid, \`change\`) VALUES (?, ?, ?, ?)`,
+                [totalAmount, paymentMethod, amountPaid, saleChange]
             );
 
             const saleId = saleResult.insertId;
 
-            // 3. Insere os itens na tabela 'sale_items' e dá baixa no estoque de cada produto
-            for (const item of data.items) {
+            // 3. Insere os itens na tabela 'sale_items' e dá baixa no estoque
+            for (const item of items) {
+                const productId = Number(item.product_id);
+                const quantity = Number(item.quantity) || 0;
+                const unitPrice = Number(item.unit_price) || 0;
+
+                // Validação de segurança para o item
+                if (!productId || quantity <= 0) {
+                    throw new Error(`Item inválido no carrinho: produto ID ${item.product_id}, quantidade ${item.quantity}`);
+                }
+
                 // Insere o item da venda
                 await connection.execute<ResultSetHeader>(
                     `INSERT INTO sale_items (sale_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)`,
-                    [saleId, item.product_id, item.quantity, item.unit_price]
+                    [saleId, productId, quantity, unitPrice]
                 );
 
-                // Atualiza o estoque do produto (suporta unidades inteiras e gramas/quilos)
+                // Atualiza o estoque do produto
                 await connection.execute<ResultSetHeader>(
                     `UPDATE products SET stock = stock - ? WHERE id = ?`,
-                    [item.quantity, item.product_id]
+                    [quantity, productId]
                 );
             }
 
-            // Se tudo correu bem, confirma a transação no banco de dados
             await connection.commit();
             return { success: true, saleId };
 
         } catch (error) {
-            // Se houver qualquer falha, desfaz todas as alterações (rollback) para proteger o estoque
             await connection.rollback();
             console.error("Erro na transação da venda (rollback executado):", error);
             throw error;
 
         } finally {
-            // Libera a conexão de volta para o pool do banco
             connection.release();
         }
     }
