@@ -1,5 +1,13 @@
 USE omnicaixa;
 
+-- Inserção de Usuários de Teste (Senha padrão para todos: '123456')
+-- O hash abaixo corresponde à senha '123456' gerada com bcrypt (custo 8 ou 10)
+INSERT INTO users (name, email, password, role, image_url) VALUES 
+('Administrador Master', 'admin@omnicaixa.com', '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 'admin', 'http://localhost:3333/uploads/users/admin.jpg'),
+('Gerente Loja', 'manager@omnicaixa.com', '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 'manager', 'http://localhost:3333/uploads/users/manager.jpg'),
+('Caixa 01', 'cashier@omnicaixa.com', '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 'cashier', 'http://localhost:3333/uploads/users/cashier.jpg');
+
+-- Inserção de Produtos
 INSERT INTO products (name, price, stock, category, image_url) VALUES 
 ('Coca-Cola 2L', 10.00, 50, 'Bebidas', 'http://localhost:3333/uploads/coca-cola.jpg'),
 ('Pão Francês (kg)', 18.50, 100, 'Padaria', 'http://localhost:3333/uploads/pao-frances.jpg'),
