@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
+import salesRoutes from './routes/salesRoutes';
 import path from 'path';
 
 dotenv.config();
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(authRoutes); // Adiciona as rotas de autenticação
 app.use(userRoutes); // Adiciona as rotas de usuários
 app.use(productRoutes); // Adiciona as rotas de produtos
+app.use(salesRoutes); // Adiciona as rotas de vendas
 
 app.get('/', (req, res) => {
   return res.json({ message: '🚀 Servidor do PDV rodando com sucesso!' });

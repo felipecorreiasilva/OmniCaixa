@@ -16,7 +16,7 @@ export interface CreateSaleInput {
 }
 
 export const SaleModel = {
-    async createSale(data: CreateSaleInput): Promise<{ success: boolean; saleId: number }> {
+    async create(data: CreateSaleInput): Promise<{ success: boolean; saleId: number }> {
         // 1. Obtém uma conexão dedicada do pool para gerir a transação atômica
         const connection = await db.getConnection();
 
