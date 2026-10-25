@@ -2,58 +2,88 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/services/api";
 import { User } from "@/types/user";
+import { authService } from "@/services/authService";
 
-interface AuthContextType {
+interface AuthContextData {
   user: User | null;
   token: string | null;
+  isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
-  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Carrega os dados salvos no localStorage ao iniciar a aplicação
   useEffect(() => {
-    // Carrega os dados salvos no navegador ao iniciar a aplicação
-    const storedToken = localStorage.getItem("@OmniCaixa:token");
-    const storedUser = localStorage.getItem("@OmniCaixa:user");
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
-    setIsLoading(false);
   }, []);
 
+  // Função chamada no login bem-sucedido
   const login = (newToken: string, newUser: User) => {
-    localStorage.setItem("@OmniCaixa:token", newToken);
-    localStorage.setItem("@OmniCaixa:user", JSON.stringify(newUser));
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(newUser));
+
     setToken(newToken);
     setUser(newUser);
-    router.push("/"); // Redireciona para a home/dashboard após logar
+
+    // Redireciona para a tela inicial do PDV ou dashboard
+    router.push("/pdv");
   };
 
-  const logout = () => {
-    localStorage.removeItem("@OmniCaixa:token");
-    localStorage.removeItem("@OmniCaixa:user");
-    setToken(null);
-    setUser(null);
-    router.push("/login"); // Redireciona para a tela de login
+  // Função para deslogar o usuário (integrada com o back-end)
+  const logout = async () => {
+    try {
+      // Opcional: Avisa o servidor para encerrar a sessão
+      await authService.logout();
+    } catch (error) {
+      console.error("Erro ao terminar sessão no servidor:", error);
+    } finally {
+      // Limpa os dados locais independentemente da resposta da API
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      setToken(null);
+      setUser(null);
+
+      router.push("/login");
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated: !!token,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
+// Hook personalizado para facilitar o uso do contexto em outros componentes
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+  }
+
+  return context;
+}

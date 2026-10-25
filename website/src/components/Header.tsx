@@ -1,53 +1,75 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, Menu } from "lucide-react";
+import Image from "next/image";
 
-export default function Header() {
+interface HeaderProps {
+  onOpenSidebar?: () => void; // Opcional caso precises de abrir menu em dispositivos móveis
+}
+
+export function Header({ onOpenSidebar }: HeaderProps) {
   const { user, logout } = useAuth();
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between shadow-sm">
-      {/* Título ou saudação dinâmica */}
-      <div className="flex items-center space-x-3">
-        <h1 className="text-xl font-bold text-gray-800">OmniCaixa</h1>
-        <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full uppercase">
-          {user?.role || "PDV"}
-        </span>
+    <header className="h-16 bg-black px-6 flex items-center justify-between text-white shadow-md">
+      
+      {/* Lado Esquerdo: Logótipo e Nome da Aplicação / Botão Menu Mobile */}
+      <div className="flex items-center gap-4">
+        {onOpenSidebar && (
+          <button 
+            onClick={onOpenSidebar}
+            className="md:hidden text-gray-400 hover:text-white transition"
+          >
+            <Menu size={24} />
+          </button>
+        )}
+
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 relative flex items-center justify-center rounded-xl overflow-hidden">
+            <Image 
+              src="/logo.png" 
+              alt="OmniCaixa Logo" 
+              fill 
+              className="object-cover"
+            />
+          </div>
+          <span className="font-bold text-lg tracking-wide text-gray-100">
+            Omni<span className="text-cyan-400">Caixa</span>
+          </span>
+        </div>
       </div>
 
-      {/* Informações do Usuário e Ações */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-3">
-          {user?.image_url ? (
-            <img
-              src={user.image_url}
-              alt={user.name}
-              className="w-10 h-10 rounded-full object-cover border border-gray-300"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
-              <UserIcon size={20} />
-            </div>
-          )}
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-gray-800">{user?.name || "Usuário"}</p>
-            <p className="text-xs text-gray-500">{user?.email || "usuario@omnicaixa.com"}</p>
+      {/* Lado Direito: Informações do Utilizador e Botão de Logout */}
+      <div className="flex items-center gap-4">
+        
+        {/* Detalhes do Utilizador */}
+        <div className="flex items-center gap-3 bg-gray-800/60 px-3 py-1.5 rounded-xl border border-gray-700/50">
+          <div className="w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+            <UserIcon size={16} />
+          </div>
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-semibold text-gray-200 leading-tight">
+              {user?.name || "Operador"}
+            </p>
+            <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider flex items-center gap-1 mt-0.5">
+              <Shield size={10} /> {user?.role || "Funcionário"}
+            </p>
           </div>
         </div>
 
-        <div className="h-6 w-px bg-gray-200" />
-
-        {/* Botão de Logout */}
+        {/* Botão de Terminar Sessão (Logout) */}
         <button
           onClick={logout}
-          title="Sair do sistema"
-          className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-gray-50"
+          title="Sair do Sistema"
+          className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-xs font-medium transition duration-200"
         >
-          <LogOut size={20} />
-          <span className="text-sm font-medium hidden md:inline">Sair</span>
+          <LogOut size={16} />
+          <span className="hidden md:inline">Sair</span>
         </button>
+
       </div>
+
     </header>
   );
 }

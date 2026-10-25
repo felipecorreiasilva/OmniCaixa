@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/services/api";
+import { authService } from "@/services/authService";
 import { Lock, Mail, Loader2, Store } from "lucide-react";
 
 export default function LoginPage() {
@@ -18,17 +18,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Ajuste a rota '/auth/login' conforme o seu backend Node.js/Express
-      const response = await api.post("/auth/login", { email, password });
+      // Utiliza o authService para realizar a chamada ao backend
+      const { token, user } = await authService.login({ email, password });
       
-      const { token, user } = response.data;
-      
-      // Salva no contexto e redireciona para a home
+      // Salva no contexto de autenticação e redireciona para a aplicação
       login(token, user);
     } catch (err: any) {
       console.error(err);
       setError(
-        err.response?.data?.message || "E-mail ou senha inválidos. Tente novamente."
+        err.response?.data?.error || 
+        err.response?.data?.message || 
+        "E-mail ou senha inválidos. Tente novamente."
       );
     } finally {
       setLoading(false);
@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8 space-y-6">
         
-        {/* Logo / Cabeçalho */}
+        {/* Logo e Cabeçalho */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full shadow-inner mb-2">
             <Store size={28} />
@@ -48,14 +48,14 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500">Entre com suas credenciais para acessar o PDV</p>
         </div>
 
-        {/* Mensagem de Erro */}
+        {/* Alerta de Erro */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg text-sm text-red-700">
             {error}
           </div>
         )}
 
-        {/* Formulário */}
+        {/* Formulário de Login */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
@@ -67,7 +67,10 @@ export default function LoginPage() {
               </span>
               <input
                 type="email"
+                name="email_omnicaixa_login"
+                id="email_omnicaixa_login"
                 required
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu.email@omnicaixa.com"
@@ -86,7 +89,10 @@ export default function LoginPage() {
               </span>
               <input
                 type="password"
+                name="password_omnicaixa_login"
+                id="password_omnicaixa_login"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -111,7 +117,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Rodapé do Login */}
+        {/* Rodapé do Formulário */}
         <div className="text-center pt-4 border-t border-gray-100">
           <p className="text-xs text-gray-400">
             OmniCaixa POS &bull; Uso exclusivo para colaboradores
