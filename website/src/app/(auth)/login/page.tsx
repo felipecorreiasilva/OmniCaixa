@@ -1,16 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/services/authService";
 import { Lock, Mail, Loader2, Store } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const router = useRouter()
+  const { user, loading: authLoading, login } = useAuth();
+
+  useEffect(() => {
+    // Se o usuário já estiver logado, redireciona para a página principal do PDV
+    if (!authLoading && user){
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
+
+  // Enquanto o contexto verifica o localStorage, mostra um loader para evitar "flicker" da tela de login
+  if (authLoading || user) {
+    return (
+      <div className="h-screen w-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

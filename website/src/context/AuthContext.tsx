@@ -9,6 +9,7 @@ interface AuthContextData {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
 }
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // Carrega os dados salvos no localStorage ao iniciar a aplicação
@@ -29,6 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
+
+    setLoading(false);
   }, []);
 
   // Função chamada no login bem-sucedido
@@ -39,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken);
     setUser(newUser);
 
-    // Redireciona para a tela inicial do PDV ou dashboard
-    router.push("/pdv");
+    // Redireciona para a tela inicial do dashboard
+    router.push("/");
   };
 
   // Função para deslogar o usuário (integrada com o back-end)
@@ -68,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         token,
         isAuthenticated: !!token,
+        loading,
         login,
         logout,
       }}

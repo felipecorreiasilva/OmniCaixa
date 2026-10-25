@@ -3,15 +3,24 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { productService } from "@/services/productService";
-import { Product } from "@/types/product";
-import { ShoppingCart, Search, Trash2, Plus, CreditCard, DollarSign, Loader2 } from "lucide-react";
+import { Product, CartItem } from "@/types/product";
+import { ShoppingCart, Search, Trash2, Plus, Minus, CreditCard, DollarSign, Loader2, Scale } from "lucide-react";
+
+// Importação dos Modais de Pagamento que criaste
+import PaymentMoneyModal from "@/components/pdv/PaymentMoneyModal";
+import PaymentCardPixModal from "@/components/pdv/PaymentCardPixModal";
+import { saleService } from "@/services/saleService";
 
 export default function PDVPage() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<any[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Estados para controlar a abertura dos modais de pagamento
+  const [isMoneyModalOpen, setIsMoneyModalOpen] = useState(false);
+  const [isCardPixModalOpen, setIsCardPixModalOpen] = useState(false);
 
   // Carrega os produtos reais do banco de dados ao abrir a página
   useEffect(() => {
@@ -30,14 +39,70 @@ export default function PDVPage() {
   }, []);
 
   const addToCart = (product: Product) => {
+    if (!product.id) return;
+
     setCart((prevCart) => {
       const itemExists = prevCart.find((item) => item.id === product.id);
+      const isKg = product.name.toLowerCase().includes("(kg)") || product.name.toLowerCase().includes("kg");
+      
       if (itemExists) {
+        const step = isKg ? 0.100 : 1;
+        const currentQty = typeof itemExists.quantity === 'number' ? itemExists.quantity : parseFloat(String(itemExists.quantity)) || 0;
+        const newQty = Number((currentQty + step).toFixed(3));
         return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: newQty, quantityStr: newQty.toString() } : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      
+      const initialQty = isKg ? 1.000 : 1;
+      const newItem: CartItem = {
+        id: Number(product.id),
+        name: product.name,
+        price: Number(product.price),
+        stock: product.stock,
+        image_url: product.image_url,
+        quantity: initialQty,
+        quantityStr: initialQty.toString(),
+      };
+
+      return [...prevCart, newItem];
+    });
+  };
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCart((prevCart) => {
+      return prevCart.reduce<CartItem[]>((acc, item) => {
+        if (item.id === id) {
+          const isKg = item.name.toLowerCase().includes("(kg)") || item.name.toLowerCase().includes("kg");
+          const step = isKg ? 0.050 : 1; 
+          const currentQty = typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity)) || 0;
+          const newQuantity = Number((currentQty + (delta * step)).toFixed(3));
+          
+          if (newQuantity > 0) {
+            acc.push({ ...item, quantity: newQuantity, quantityStr: newQuantity.toString() });
+          }
+        } else {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+    });
+  };
+
+  // Função para lidar com a digitação livre no input como string
+  const handleDirectInputChange = (id: number, valueStr: string) => {
+    setCart((prevCart) => {
+      return prevCart.map((item) => {
+        if (item.id === id) {
+          const numericValue = parseFloat(valueStr);
+          return {
+            ...item,
+            quantityStr: valueStr,
+            quantity: isNaN(numericValue) ? 0 : numericValue
+          };
+        }
+        return item;
+      });
     });
   };
 
@@ -45,7 +110,36 @@ export default function PDVPage() {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  const totalCart = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalCart = cart.reduce((total, item) => total + item.price * (item.quantity || 0), 0);
+
+  // Função executada quando o pagamento é confirmado com sucesso
+  const handleFinalizeSale = async (method: string, amountPaid?: number, change?: number) => {
+    try {
+      // Prepara os dados para enviar ao backend MySQL
+      const saleData = {
+        payment_method: method,
+        total_amount: totalCart,
+        amount_paid: amountPaid,
+        change: change,
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      // Grava efetivamente no banco de dados MySQL através da API
+      await saleService.createSale(saleData);
+
+      alert(`Venda realizada e gravada no banco de dados com sucesso via ${method}!\nTotal: R$ ${totalCart.toFixed(2)}${change !== undefined ? `\nTroco: R$ ${change.toFixed(2)}` : ''}`);
+
+      // Limpa o carrinho após a confirmação
+      setCart([]);
+    } catch (error) {
+      console.error("Erro ao gravar venda no banco de dados:", error);
+      alert("Erro ao finalizar a venda. Verifique a conexão com o servidor.");
+    }
+  };
 
   // Filtra os produtos com base na barra de pesquisa
   const filteredProducts = products.filter((p) =>
@@ -53,7 +147,7 @@ export default function PDVPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-black overflow-hidden text-white">
+    <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-slate-50 overflow-hidden text-slate-800">
       
       {/* Lado Esquerdo: Catálogo de Produtos e Busca */}
       <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto">
@@ -61,13 +155,13 @@ export default function PDVPage() {
         {/* Cabeçalho da Área de Produtos */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Frente de Caixa (PDV)</h1>
-            <p className="text-sm text-zinc-400">Operador: <span className="font-semibold text-cyan-400">{user?.name || "Funcionário"}</span></p>
+            <h1 className="text-2xl font-bold text-slate-900">Frente de Caixa (PDV)</h1>
+            <p className="text-sm text-slate-500">Operador: <span className="font-semibold text-cyan-600">{user?.name || "Funcionário"}</span></p>
           </div>
 
           {/* Barra de Pesquisa / Leitor de Código de Barras */}
           <div className="relative w-full sm:w-72">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
               <Search size={18} />
             </span>
             <input
@@ -75,7 +169,7 @@ export default function PDVPage() {
               placeholder="Pesquisar produto ou código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 shadow-inner transition"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm transition"
             />
           </div>
         </div>
@@ -83,115 +177,170 @@ export default function PDVPage() {
         {/* Grelha de Produtos Dinâmica */}
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+            <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 space-y-2">
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 space-y-2">
             <p className="text-sm">Nenhum produto encontrado no banco de dados.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                onClick={() => addToCart(product)}
-                className="bg-zinc-900 p-4 rounded-xl border border-cyan-500/40 hover:border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:shadow-[0_0_15px_rgba(0,240,255,0.3)] cursor-pointer transition flex flex-col justify-between group"
-              >
-                <div>
-                  {/* Imagem do Produto ou Placeholder */}
-                  <div className="w-full h-32 bg-black/50 rounded-lg mb-3 overflow-hidden border border-zinc-800 flex items-center justify-center relative">
-                    {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      />
-                    ) : (
-                      <div className="text-zinc-600 flex flex-col items-center gap-1">
-                        <span className="text-xs">Sem imagem</span>
+            {filteredProducts.map((product) => {
+              const isKg = product.name.toLowerCase().includes("(kg)") || product.name.toLowerCase().includes("kg");
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => addToCart(product)}
+                  className="bg-white p-4 rounded-2xl border border-slate-400 hover:border-cyan-300 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center p-1">
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name}
+                          className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
+                        />
+                      ) : (
+                        <span className="text-[10px] text-slate-400">Sem foto</span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <h3 className="font-semibold text-slate-900 group-hover:text-cyan-600 transition truncate text-sm">{product.name}</h3>
+                        {isKg && (
+                          <span title="Produto a granel (Peso)">
+                            <Scale size={14} className="text-cyan-600 shrink-0" />
+                          </span>
+                        )}
                       </div>
-                    )}
+                      <p className="text-xs text-slate-500 mt-0.5">Estoque: {product.stock} {isKg ? 'kg' : 'un.'}</p>
+                    </div>
                   </div>
 
-                  <h3 className="font-semibold text-zinc-100 group-hover:text-cyan-400 transition truncate">{product.name}</h3>
-                  <p className="text-xs text-zinc-400 mt-1">Estoque: {product.stock} un.</p>
+                  <div className="mt-4 flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span className="text-base font-bold text-cyan-600">
+                      R$ {Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">{isKg ? '/kg' : ''}</span>
+                    </span>
+                    <span className="p-1.5 bg-cyan-50 text-cyan-600 border border-cyan-100 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition">
+                      <Plus size={14} /> Adicionar
+                    </span>
+                  </div>
                 </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold text-cyan-400">
-                    R$ {Number(product.price).toFixed(2)}
-                  </span>
-                  <span className="p-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500/20 transition">
-                    <Plus size={14} /> Adicionar
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Lado Direito: Carrinho e Resumo do Pagamento */}
-      <div className="w-full md:w-96 bg-zinc-900 border-l border-zinc-800 flex flex-col justify-between shadow-2xl">
+      <div className="w-full md:w-96 bg-white border-l border-slate-200 flex flex-col justify-between shadow-sm">
         
         {/* Título do Carrinho */}
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-black/40">
-          <div className="flex items-center gap-2 text-zinc-200 font-bold">
-            <ShoppingCart size={20} className="text-cyan-400" />
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-2 text-slate-800 font-bold">
+            <ShoppingCart size={20} className="text-cyan-600" />
             <span>Carrinho Atual</span>
           </div>
-          <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs px-2.5 py-1 rounded-full font-semibold">
-            {cart.reduce((acc, item) => acc + item.quantity, 0)} itens
+          <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 text-xs px-2.5 py-1 rounded-full font-semibold">
+            {cart.reduce((acc, item) => acc + (item.name.toLowerCase().includes('kg') ? 1 : item.quantity), 0)} itens
           </span>
         </div>
 
         {/* Lista de Itens no Carrinho */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-center space-y-2">
-              <ShoppingCart size={40} className="stroke-1 text-zinc-600" />
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center space-y-2">
+              <ShoppingCart size={40} className="stroke-1 text-slate-300" />
               <p className="text-sm">O carrinho está vazio.<br/>Selecione os produtos ao lado.</p>
             </div>
           ) : (
-            cart.map((item) => (
-              <div key={item.id} className="flex items-center justify-between bg-black/60 p-3 rounded-xl border border-zinc-800">
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-zinc-200">{item.name}</h4>
-                  <p className="text-xs text-zinc-400">R$ {Number(item.price).toFixed(2)} x {item.quantity}</p>
+            cart.map((item) => {
+              const isKg = item.name.toLowerCase().includes("(kg)") || item.name.toLowerCase().includes("kg");
+              const pesoEmGramas = isKg ? Math.round((item.quantity || 0) * 1000) : null;
+
+              return (
+                <div key={item.id} className="flex flex-col bg-slate-50 p-3 rounded-xl border border-slate-200 gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-slate-800 truncate">{item.name}</h4>
+                      <p className="text-xs text-cyan-600 font-medium">
+                        R$ {Number(item.price).toFixed(2)} {isKg ? '/kg' : ''}
+                      </p>
+                    </div>
+
+                    {/* Subtotal e Exclusão */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900">
+                        R$ {(item.price * (item.quantity || 0)).toFixed(2)}
+                      </span>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 hover:text-red-600 p-1 bg-red-50 rounded-lg border border-red-100 transition"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Linha Inferior: Controladores de Quantidade e Leitura em Gramas */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      {isKg ? `(${pesoEmGramas}g)` : 'Quantidade:'}
+                    </span>
+
+                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded transition"
+                        title={isKg ? "Diminuir peso" : "Diminuir 1"}
+                      >
+                        <Minus size={12} />
+                      </button>
+                      
+                      {/* Input de texto livre com suporte a ponto decimal */}
+                      <input
+                        type="text"
+                        value={item.quantityStr ?? item.quantity}
+                        onChange={(e) => handleDirectInputChange(item.id, e.target.value)}
+                        className="w-16 text-xs font-bold text-slate-800 text-center bg-transparent focus:outline-none focus:ring-1 focus:ring-cyan-500 rounded"
+                      />
+
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded transition"
+                        title={isKg ? "Aumentar peso" : "Aumentar 1"}
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-cyan-400">
-                    R$ {(item.price * item.quantity).toFixed(2)}
-                  </span>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-lg border border-red-500/20 transition"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
         {/* Rodapé do Carrinho e Botões de Pagamento */}
-        <div className="p-4 border-t border-zinc-800 bg-black/40 space-y-4">
-          <div className="flex justify-between items-center text-lg font-bold text-zinc-100">
+        <div className="p-4 border-t border-slate-200 bg-slate-50/50 space-y-4">
+          <div className="flex justify-between items-center text-lg font-bold text-slate-900">
             <span>Total a Pagar:</span>
-            <span className="text-cyan-400">R$ {totalCart.toFixed(2)}</span>
+            <span className="text-cyan-600">R$ {totalCart.toFixed(2)}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <button
               disabled={cart.length === 0}
-              className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              onClick={() => setIsMoneyModalOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
               <DollarSign size={16} /> Dinheiro
             </button>
             <button
               disabled={cart.length === 0}
-              className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-medium py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              onClick={() => setIsCardPixModalOpen(true)}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
               <CreditCard size={16} /> Cartão / Pix
             </button>
@@ -199,6 +348,21 @@ export default function PDVPage() {
         </div>
 
       </div>
+
+      {/* Modais de Pagamento */}
+      <PaymentMoneyModal
+        isOpen={isMoneyModalOpen}
+        onClose={() => setIsMoneyModalOpen(false)}
+        totalAmount={totalCart}
+        onConfirmSale={handleFinalizeSale}
+      />
+
+      <PaymentCardPixModal
+        isOpen={isCardPixModalOpen}
+        onClose={() => setIsCardPixModalOpen(false)}
+        totalAmount={totalCart}
+        onConfirmSale={handleFinalizeSale}
+      />
 
     </div>
   );

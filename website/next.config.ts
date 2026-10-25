@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
   experimental: {
+    instantInsights: {
+      validationLevel: 'manual-warning',
+    },
     agentFeedback: true,
   },
   cacheComponents: true,
