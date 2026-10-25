@@ -98,9 +98,25 @@ export default function PDVPage() {
                 className="bg-zinc-900 p-4 rounded-xl border border-cyan-500/40 hover:border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:shadow-[0_0_15px_rgba(0,240,255,0.3)] cursor-pointer transition flex flex-col justify-between group"
               >
                 <div>
-                  <h3 className="font-semibold text-zinc-100 group-hover:text-cyan-400 transition">{product.name}</h3>
+                  {/* Imagem do Produto ou Placeholder */}
+                  <div className="w-full h-32 bg-black/50 rounded-lg mb-3 overflow-hidden border border-zinc-800 flex items-center justify-center relative">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      />
+                    ) : (
+                      <div className="text-zinc-600 flex flex-col items-center gap-1">
+                        <span className="text-xs">Sem imagem</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="font-semibold text-zinc-100 group-hover:text-cyan-400 transition truncate">{product.name}</h3>
                   <p className="text-xs text-zinc-400 mt-1">Estoque: {product.stock} un.</p>
                 </div>
+
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-lg font-bold text-cyan-400">
                     R$ {Number(product.price).toFixed(2)}
