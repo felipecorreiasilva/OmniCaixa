@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/productModel';
+import fs from 'fs';
+import path from 'path';
 
 export const ProductController = {
   // Buscar todos os produtos
@@ -93,15 +95,50 @@ export const ProductController = {
 
     // Deletar um produto
     async deleteProduct(req: Request, res: Response) {
-        try {
-            const { id } = req.params;
-            const deleted = await ProductModel.delete(Number(id));
-            if (!deleted) {
-                return res.status(404).json({ error: 'Produto não encontrado.' });
+      try {
+          const { id } = req.params;
+
+          // 1. Opcional: Buscar o produto primeiro para obter o caminho da imagem antiga
+          const product = await ProductModel.findById(Number(id));
+          
+          if (!product) {
+              return res.status(404).json({ error: 'Produto não encontrado.' });
+          }
+
+          // 2. Apagar o registo da base de dados
+          await ProductModel.delete(Number(id));
+
+          // 3. Apagar o ficheiro físico da pasta uploads (se ele existir)
+          if (product.image_url) {
+            try {
+                // Se a image_url for uma URL completa (ex: http://localhost:3333/uploads/products/foto.jpg)
+                // extraímos apenas o pathname (/uploads/products/foto.jpg)
+                let relativePath = product.image_url;
+                
+                if (product.image_url.startsWith('http')) {
+                    const parsedUrl = new URL(product.image_url);
+                    relativePath = parsedUrl.pathname; // Fica apenas com "/uploads/products/foto.jpg"
+                }
+
+                // Agora combinamos com o diretório atual do projeto para chegar ao ficheiro físico
+                // Subimos duas pastas a partir de 'controllers' (ajusta se necessário) para chegar à raiz do backend
+                const filePath = path.join(__dirname, '..', '..', relativePath);
+
+                if (fs.existsSync(filePath)) {
+                    fs.unlink(filePath, (err) => {
+                        if (err) console.error('Erro ao apagar o ficheiro do disco:', err);
+                        else console.log('Imagem física apagada com sucesso:', filePath);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao processar o caminho da imagem para exclusão:', error);
             }
-            return res.json({ message: 'Produto deletado com sucesso.' });
-        } catch (error: any) {
-            return res.status(500).json({ error: 'Erro ao deletar produto: ' + error.message });
         }
+
+        return res.json({ message: 'Produto e imagem excluídos com sucesso!' });
+
+      } catch (error: any) {
+          return res.status(500).json({ error: 'Erro ao excluir produto: ' + error.message });
+      }
     }
 };

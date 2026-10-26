@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/userModel';
 import bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
 
 export const UserController = {
     
@@ -129,17 +131,48 @@ export const UserController = {
         try {
             const { id } = req.params;
 
-            // Evitar que o admin delete a si mesmo por acidente (opcional, mas recomendado)
-            // (req as any).user contém os dados do usuário logado vindos do token JWT
+            // Evitar que o admin delete a si mesmo por acidente
             const loggedUserId = (req as any).user?.id;
             if (loggedUserId === Number(id)) {
                 return res.status(400).json({ error: 'Você não pode excluir sua própria conta de administrador.' });
             }
 
+            // 1. Buscar o usuário antes de apagar para obter o caminho do avatar antigo
+            const user = await UserModel.findById(Number(id));
+
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado.' });
+            }
+
+            // 2. Apagar o registo da base de dados
             const deleted = await UserModel.delete(Number(id));
 
             if (!deleted) {
                 return res.status(404).json({ error: 'Usuário não encontrado.' });
+            }
+
+            // 3. Apagar o ficheiro físico do avatar do disco (se existir)
+            if (user.image_url) {
+                try {
+                    let relativePath = user.image_url;
+                    
+                    // Se for uma URL completa, extraímos apenas o pathname (/uploads/users/...)
+                    if (user.image_url.startsWith('http')) {
+                        const parsedUrl = new URL(user.image_url);
+                        relativePath = parsedUrl.pathname;
+                    }
+
+                    // Combina com o diretório raiz do backend a partir da pasta controllers
+                    const filePath = path.join(__dirname, '..', '..', relativePath);
+
+                    if (fs.existsSync(filePath)) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) console.error('Erro ao apagar o avatar do disco:', err);
+                        });
+                    }
+                } catch (fileErr) {
+                    console.error('Erro ao processar o caminho do avatar para exclusão:', fileErr);
+                }
             }
 
             return res.json({ message: 'Funcionário excluído com sucesso!' });
