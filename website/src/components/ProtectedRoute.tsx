@@ -23,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
     // Se a rota exige cargos específicos e o usuário não possui a role necessária
     if (!loading && user && allowedRoles && !allowedRoles.includes(user.role)) {
-      router.push("/pdv"); // Redireciona para o PDV ou uma página de acesso negado
+      router.push("/unauthorized"); // Redireciona para uma página de acesso negado
     }
   }, [user, loading, router, allowedRoles]);
 
