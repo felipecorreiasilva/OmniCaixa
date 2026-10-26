@@ -16,12 +16,8 @@ export const productService = {
 
     // Alterado para aceitar FormData (necessário para o upload de imagem via multer)
     async createProduct(productData: FormData): Promise<Product> {
-        const response = await api.post<Product>('/products', productData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })
-        return response.data;
+    const response = await api.post<Product>('/products', productData);
+    return response.data;
     },
 
     // Alterado para aceitar FormData (necessário para o upload de imagem via multer)

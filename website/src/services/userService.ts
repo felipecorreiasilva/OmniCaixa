@@ -16,21 +16,13 @@ export const userService = {
 
   // POST /users - Cadastrar novo funcionário
   async createUser(data: Partial<User> | FormData): Promise<User> {
-      const response = await api.post<User>("/users", data, {
-          headers: {
-              'Content-Type': 'multipart/form-data',
-          },
-      });
+      const response = await api.post<User>("/users", data);
       return response.data;
   },
 
   // Altera para isto:
   async updateUser(id: number | string, data: Partial<User> | FormData): Promise<User> {
-      const response = await api.put<User>(`/users/${id}`, data, {
-          headers: {
-              'Content-Type': 'multipart/form-data',
-          },
-      });
+      const response = await api.put<User>(`/users/${id}`, data);
       return response.data;
   },
 
