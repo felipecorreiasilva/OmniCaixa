@@ -8,6 +8,7 @@ import { User } from "@/types/user";
 import CreateUserModal from "@/components/users/CreateUserModal";
 import EditUserModal from "@/components/users/EditUserModal";
 import DeleteUserModal from "@/components/users/DeleteUserModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -15,9 +16,13 @@ export default function UsersPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [deletingUser, setDeletingUser] = useState<User | null>(null)
+    const { user } = useAuth();
     // Carregar utilizadores da API ao montar o componente
     useEffect(() => {
-        loadUsers();
+        // Só carrega os utilizadores se o utilizador logado for admin ou manager
+        if (user && (user.role === 'admin' || user.role === 'manager')) {
+            loadUsers();
+        }
     }, []);
 
     async function loadUsers() {
