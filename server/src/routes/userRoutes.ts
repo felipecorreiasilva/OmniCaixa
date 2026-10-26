@@ -20,7 +20,7 @@ router.get('/users/:id', verifyToken, verifyAdminManagerOrSelf, UserController.g
 router.post('/users', verifyToken, verifyAdminOrManager,uploadUser.single('image'), UserController.createUser);
 
 // Atualizar funcionário (Admin/Gerente OU o próprio usuário)
-router.put('/users/:id', verifyToken, verifyAdminManagerOrSelf, UserController.updateUser);
+router.put('/users/:id', verifyToken, verifyAdminManagerOrSelf, uploadUser.single('image_url'), UserController.updateUser);
 
 // Deletar funcionário (Estritamente Admin)
 router.delete('/users/:id', verifyToken, verifyAdmin, UserController.deleteUser);

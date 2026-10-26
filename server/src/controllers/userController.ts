@@ -80,13 +80,24 @@ export const UserController = {
         try {
             const { id } = req.params;
             const loggedUser = (req as any).user; 
-            const { name, email, role, password } = req.body;
-            
-            const avatarFile = req.file;
             const targetUserId = Number(id);
+
+            // 🔒 SEGURANÇA: Se o usuário NÃO for admin nem gerente, 
+            // ele só pode atualizar a sua própria conta!
+            if (loggedUser.role !== 'admin' && loggedUser.role !== 'manager') {
+                if (loggedUser.id !== targetUserId) {
+                    return res.status(403).json({ 
+                        error: 'Acesso negado. Você só pode atualizar o seu próprio perfil.' 
+                    });
+                }
+            }
+
+            const { name, email, role, password } = req.body;
+            const avatarFile = req.file;
 
             let finalRole = role;
 
+            // Regra para impedir que não-admins mudem cargos
             if (loggedUser.role !== 'admin') {
                 const currentUser = await UserModel.findById(targetUserId);
                 if (!currentUser) {
@@ -101,7 +112,6 @@ export const UserController = {
                 role: finalRole,
             };
 
-            // 🔒 Encripta a nova palavra-passe se ela foi preenchida
             if (password && password.trim() !== '') {
                 const saltRounds = 10;
                 updateData.password = await bcrypt.hash(password, saltRounds);
