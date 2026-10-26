@@ -39,7 +39,7 @@ export const ProductController = {
       if (req.file) {
         // 2. Constrói a URL pública base do servidor dinamicamente
         const baseUrl = `${req.protocol}://${req.get('host')}`;
-        image_url = `${baseUrl}/uploads/${req.file.filename}`;
+        image_url = `${baseUrl}/uploads/products/${req.file.filename}`;
       }
       const newProduct = await ProductModel.create({ name, price, stock, category, image_url });
       return res.status(201).json(newProduct);

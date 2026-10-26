@@ -2,8 +2,8 @@
 
 :root {
   /* Altere a variável --background para #000000 */
-  --background: #000000;
-  --foreground: #ffffff; /* Ajustei o texto para branco para dar contraste */
+  --background: #ffffff;
+  --foreground: #000000; /* Ajustei o texto para branco para dar contraste */
 }
 
 /* @theme inline {
