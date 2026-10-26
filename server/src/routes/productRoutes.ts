@@ -10,10 +10,10 @@ const router = Router();
 const uploadProduct = multer(uploadProductsConfig);
 
 // Rota para listar produtos (GET /products)
-router.get('/products', ProductController.getProducts);
+router.get('/products', verifyToken, ProductController.getProducts);
 
 // Rota para buscar um produto por ID (GET /products/:id)
-router.get('/products/:id', ProductController.getProductById);
+router.get('/products/:id', verifyToken, ProductController.getProductById);
 
 // Rota para cadastrar um produto (POST /products)
 router.post('/products', verifyToken, verifyAdminOrManager, uploadProduct.single('image'), ProductController.createProduct);

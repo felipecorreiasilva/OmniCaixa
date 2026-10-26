@@ -3,9 +3,50 @@
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { ShoppingCart, Package, Users, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardHomePage() {
   const { user } = useAuth();
+  const router = useRouter();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        // 1. Se não houver token, expulsa para o login
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        try {
+            // 2. Decodifica a parte do meio do JWT (Payload) para ver a validade (exp)
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+
+            const { exp } = JSON.parse(jsonPayload);
+            const currentTime = Date.now() / 1000;
+
+            // 3. Se o tempo atual for maior que a expiração do token, limpa e desloga!
+            if (exp && currentTime > exp) {
+                console.warn('Token expirado detetado no Dashboard. A deslogar...');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                router.push('/login');
+            }
+        } catch (err) {
+            // Se o token estiver corrompido/malformado
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.push('/login');
+        }
+    }, [router]);
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-full text-slate-800">
