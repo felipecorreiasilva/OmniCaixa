@@ -77,31 +77,39 @@ export const UserController = {
     async updateUser(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const loggedUser = (req as any).user; // Dados de quem está fazendo a requisição
-            const { name, email, role, image_url } = req.body;
-
+            const loggedUser = (req as any).user; 
+            const { name, email, role, password } = req.body;
+            
+            const avatarFile = req.file;
             const targetUserId = Number(id);
 
-            // Regra de segurança para o Role:
             let finalRole = role;
 
-            // Se o usuário logado NÃO for admin, ele não tem permissão para alterar cargos
             if (loggedUser.role !== 'admin') {
-                // Buscamos o usuário no banco para manter o role original dele intocado
                 const currentUser = await UserModel.findById(targetUserId);
                 if (!currentUser) {
                     return res.status(404).json({ error: 'Usuário não encontrado.' });
                 }
-                finalRole = currentUser.role; // Mantém o cargo antigo, ignorando o que veio no body
+                finalRole = currentUser.role; 
             }
 
-            // Executa a atualização no banco de dados
-            const updatedUser = await UserModel.update(targetUserId, {
+            const updateData: any = {
                 name,
                 email,
                 role: finalRole,
-                image_url
-            });
+            };
+
+            // 🔒 Encripta a nova palavra-passe se ela foi preenchida
+            if (password && password.trim() !== '') {
+                const saltRounds = 10;
+                updateData.password = await bcrypt.hash(password, saltRounds);
+            }
+
+            if (avatarFile) {
+                updateData.image_url = `/uploads/users/${avatarFile.filename}`; 
+            }
+
+            const updatedUser = await UserModel.update(targetUserId, updateData);
 
             if (!updatedUser) {
                 return res.status(404).json({ error: 'Usuário não encontrado.' });

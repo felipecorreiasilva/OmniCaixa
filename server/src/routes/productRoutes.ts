@@ -19,7 +19,7 @@ router.get('/products/:id', verifyToken, ProductController.getProductById);
 router.post('/products', verifyToken, verifyAdminOrManager, uploadProduct.single('image'), ProductController.createProduct);
 
 // Rota para atualizar um produto (PUT /products/:id)
-router.put('/products/:id', verifyToken, verifyAdminOrManager, ProductController.updateProduct);
+router.put('/products/:id', verifyToken, verifyAdminOrManager,uploadProduct.single('image'), ProductController.updateProduct);
 
 // Rota para deletar um produto (DELETE /products/:id)
 router.delete('/products/:id', verifyToken, verifyAdmin, ProductController.deleteProduct);

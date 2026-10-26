@@ -50,22 +50,45 @@ export const ProductController = {
 
   // Atualizar um produto existente
   async updateProduct(req: Request, res: Response) {
-    try {
-        const { id } = req.params;
-        const { name, price, stock, category, image_url } = req.body;
+        try {
+            const { id } = req.params;
+            const { name, price, stock, category } = req.body; // Retirado image_url daqui
+            
+            // O ficheiro enviado pelo Multer (se houver) virá aqui:
+            const imageFile = req.file;
 
-        if (!name || price === undefined) {
-            return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
-        }
-        const updateProduct = await ProductModel.update(Number(id), { name, price, stock, category, image_url });
-        if (!updateProduct) {
-            return res.status(404).json({ error: 'Produto não encontrado.' });
-        }
-        return res.json(updateProduct);
+            if (!name || price === undefined) {
+                return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
+            }
 
-    }catch (error: any) {
-      return res.status(500).json({ error: 'Erro ao atualizar produto: ' + error.message });
-    }
+            // Objeto base para a atualização
+            const updateData: any = {
+                name,
+                price: Number(price), // Garante que o preço vai como número para a base de dados
+                stock: stock !== undefined ? Number(stock) : undefined,
+                category
+            };
+
+            // Lógica inteligente para a imagem:
+            // Só atualizamos o campo image_url se o utilizador enviou um novo ficheiro
+            if (imageFile) {
+                updateData.image_url = `/uploads/products/${imageFile.filename}`; // Ajusta a pasta conforme o teu projeto
+            }
+
+            const updatedProduct = await ProductModel.update(Number(id), updateData);
+            
+            if (!updatedProduct) {
+                return res.status(404).json({ error: 'Produto não encontrado.' });
+            }
+            
+            return res.json({
+                message: 'Produto atualizado com sucesso!',
+                product: updatedProduct
+            });
+
+        } catch (error: any) {
+            return res.status(500).json({ error: 'Erro ao atualizar produto: ' + error.message });
+        }
     },
 
     // Deletar um produto
