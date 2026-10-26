@@ -1,7 +1,7 @@
 USE omnicaixa;
 
--- Inserção de Usuários de Teste (Senha padrão para todos: '123456')
--- O hash abaixo corresponde à senha '123456' gerada com bcrypt (custo 8 ou 10)
+-- Inserção de Usuários de Teste (Senha padrão para todos: '12345678')
+-- O hash abaixo corresponde à senha '12345678' gerada com bcrypt (custo 8 ou 10)
 INSERT INTO users (name, email, password, role, image_url) VALUES 
 ('Administrador Master', 'admin@omnicaixa.com', '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 'admin', 'http://localhost:3333/uploads/users/admin.jpg'),
 ('Gerente Loja', 'manager@omnicaixa.com', '$2b$10$7h3pvq9oW3GAIQR6kwAY/OmUli/9spQmtVSTKEgJlWklygzF91H3y', 'manager', 'http://localhost:3333/uploads/users/manager.jpg'),
