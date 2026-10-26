@@ -35,19 +35,6 @@ export default function ProductsPage() {
         }
     }
 
-    async function handleDelete(id?: number) {
-        if (!id) return;
-        if (confirm('Tem certeza que deseja excluir este produto?')) {
-            try {
-                await productService.deleteProduct(id);
-                loadProducts(); // Recarrega a lista após excluir
-            } catch (err) {
-                alert('Erro ao excluir o produto.');
-                console.error(err);
-            }
-        }
-    }
-
     return (
         <ProtectedRoute allowedRoles={['admin', 'manager']}>
             <div className="p-6 max-w-7xl mx-auto">

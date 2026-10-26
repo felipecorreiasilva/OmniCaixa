@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { LogOut, User as UserIcon, Shield, Menu } from "lucide-react";
 import Image from "next/image";
-
+import Link from "next/link";
 interface HeaderProps {
   onOpenSidebar?: () => void; // Opcional caso precises de abrir menu em dispositivos móveis
 }
@@ -24,8 +24,11 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             <Menu size={24} />
           </button>
         )}
-
-        <div className="flex items-center gap-3">
+        
+        <Link 
+          href="/" 
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+        >
           <div className="w-9 h-9 relative flex items-center justify-center rounded-xl overflow-hidden">
             <Image 
               src="/logo.png" 
@@ -37,7 +40,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
           <span className="font-bold text-lg tracking-wide text-gray-100">
             Omni<span className="text-cyan-400">Caixa</span>
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Lado Direito: Informações do Utilizador e Botão de Logout */}
