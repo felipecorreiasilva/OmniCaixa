@@ -32,7 +32,7 @@ export default function UsersPage() {
         }
     }
     return (
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin','manager']}>
             <div className="p-6 max-w-7xl mx-auto">
                 {/* Cabeçalho da Página */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -121,14 +121,14 @@ export default function UsersPage() {
                                                     <button 
                                                         title="Editar"
                                                         onClick={() => setEditingUser(u)}
-                                                        className="p-2 text-cyan-600 hover:text-cyan-800 hover:bg-cyan-50 rounded-lg transition"
+                                                        className="cursor-pointer p-2 text-cyan-600 hover:text-cyan-800 hover:bg-cyan-50 rounded-lg transition"
                                                     >
                                                         <Edit size={16} />
                                                     </button>
                                                     <button 
                                                         title="Eliminar"
                                                         onClick={() => setDeletingUser(u)}
-                                                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50/50 rounded-lg transition"
+                                                        className="cursor-pointer p-2 text-red-600 hover:text-red-800 hover:bg-red-50/50 rounded-lg transition"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>

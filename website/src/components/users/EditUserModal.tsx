@@ -162,15 +162,29 @@ export default function EditUserModal({ isOpen, onClose, onSuccess, user }: Edit
                             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                                 <Shield size={16} />
                             </span>
-                            <select 
-                                value={role}
-                                onChange={(e) => setRole(e.target.value as any)}
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition text-gray-700"
-                            >
-                                <option value="cashier">Caixa (Cashier)</option>
-                                <option value="manager">Gerente (Manager)</option>
-                                <option value="admin">Administrador (Admin)</option>
-                            </select>
+
+                            {role === 'admin' ? (
+                                <select 
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value as any)}
+                                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition text-gray-700"
+                                >
+                                    <option value="cashier">Caixa (Cashier)</option>
+                                    <option value="manager">Gerente (Manager)</option>
+                                    <option value="admin">Administrador (Admin)</option>
+                                </select>
+                            ) : (
+                                <div className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100 border border-gray-200 rounded-xl text-gray-500 flex items-center justify-between cursor-not-allowed select-none">
+                                    <span className="capitalize">
+                                        {{
+                                            admin: 'Administrador (Admin)',
+                                            manager: 'Gerente (Manager)',
+                                            cashier: 'Caixa (Cashier)'
+                                        }[role] || 'Caixa (Cashier)'}
+                                    </span>
+                                    <span className="text-xs text-gray-400 italic">Apenas administradores podem alterar</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
