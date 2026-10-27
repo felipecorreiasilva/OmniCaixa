@@ -50,7 +50,7 @@ export const ProductController = {
     }
   },
 
-  // Atualizar um produto existente com suporte a troca de imagem e remoção da antiga
+  // Atualizar um produto existente com caminho relativo e remoção limpa da imagem antiga
   async updateProduct(req: Request, res: Response) {
     try {
         const { id } = req.params;
@@ -58,7 +58,6 @@ export const ProductController = {
         const imageFile = req.file;
 
         if (!name || price === undefined) {
-            // Se houver erro de validação mas um ficheiro foi enviado, apaga-o para não ficar órfão
             if (imageFile) {
                 fs.unlink(imageFile.path, () => {});
             }
@@ -82,10 +81,9 @@ export const ProductController = {
             category
         };
 
-        // 2. Se um novo ficheiro foi enviado, constrói a nova URL pública
+        // 2. Se um novo ficheiro foi enviado, define o caminho relativo limpo
         if (imageFile) {
-            const baseUrl = `${req.protocol}://${req.get('host')}`;
-            updateData.image_url = `${baseUrl}/uploads/products/${imageFile.filename}`;
+            updateData.image_url = `/uploads/products/${imageFile.filename}`;
         }
 
         // 3. Atualizar na base de dados
@@ -101,15 +99,8 @@ export const ProductController = {
         // 4. Se o produto foi atualizado E o utilizador enviou uma NOVA imagem, apaga a imagem antiga do disco
         if (imageFile && existingProduct.image_url) {
             try {
-                let relativePath = existingProduct.image_url;
-                
-                if (existingProduct.image_url.startsWith('http')) {
-                    const parsedUrl = new URL(existingProduct.image_url);
-                    relativePath = parsedUrl.pathname; // Fica com "/uploads/products/foto-antiga.jpg"
-                }
-
-                // Sobe duas pastas a partir de 'controllers' para chegar à raiz e encontrar a pasta 'uploads'
-                const oldFilePath = path.join(__dirname, '..', '..', relativePath);
+                // Combina diretamente o caminho atual com o caminho relativo guardado na base de dados
+                const oldFilePath = path.join(__dirname, '..', '..', existingProduct.image_url);
 
                 if (fs.existsSync(oldFilePath)) {
                     fs.unlink(oldFilePath, (err) => {
@@ -128,7 +119,6 @@ export const ProductController = {
         });
 
     } catch (error: any) {
-        // Se ocorrer qualquer exceção inesperada e houver um ficheiro novo carregado, limpa-o
         if (req.file) {
             fs.unlink(req.file.path, () => {});
         }
@@ -136,12 +126,12 @@ export const ProductController = {
     }
   },
 
-    // Deletar um produto
+    // Deletar um produto e a respetiva imagem do disco
     async deleteProduct(req: Request, res: Response) {
       try {
           const { id } = req.params;
 
-          // 1. Opcional: Buscar o produto primeiro para obter o caminho da imagem antiga
+          // 1. Buscar o produto primeiro para obter o caminho relativo da imagem
           const product = await ProductModel.findById(Number(id));
           
           if (!product) {
@@ -153,32 +143,23 @@ export const ProductController = {
 
           // 3. Apagar o ficheiro físico da pasta uploads (se ele existir)
           if (product.image_url) {
-            try {
-                // Se a image_url for uma URL completa (ex: http://localhost:3333/uploads/products/foto.jpg)
-                // extraímos apenas o pathname (/uploads/products/foto.jpg)
-                let relativePath = product.image_url;
-                
-                if (product.image_url.startsWith('http')) {
-                    const parsedUrl = new URL(product.image_url);
-                    relativePath = parsedUrl.pathname; // Fica apenas com "/uploads/products/foto.jpg"
-                }
+              try {
+                  // Como já guardamos em caminho relativo (ex: /uploads/products/foto.jpg), 
+                  // combinamos diretamente com o diretório raiz do projeto.
+                  const filePath = path.join(__dirname, '..', '..', product.image_url);
 
-                // Agora combinamos com o diretório atual do projeto para chegar ao ficheiro físico
-                // Subimos duas pastas a partir de 'controllers' (ajusta se necessário) para chegar à raiz do backend
-                const filePath = path.join(__dirname, '..', '..', relativePath);
+                  if (fs.existsSync(filePath)) {
+                      fs.unlink(filePath, (err) => {
+                          if (err) console.error('Erro ao apagar o ficheiro do disco:', err);
+                          else console.log('Imagem física apagada com sucesso:', filePath);
+                      });
+                  }
+              } catch (error) {
+                  console.error('Erro ao processar o caminho da imagem para exclusão:', error);
+              }
+          }
 
-                if (fs.existsSync(filePath)) {
-                    fs.unlink(filePath, (err) => {
-                        if (err) console.error('Erro ao apagar o ficheiro do disco:', err);
-                        else console.log('Imagem física apagada com sucesso:', filePath);
-                    });
-                }
-            } catch (error) {
-                console.error('Erro ao processar o caminho da imagem para exclusão:', error);
-            }
-        }
-
-        return res.json({ message: 'Produto e imagem excluídos com sucesso!' });
+          return res.json({ message: 'Produto e imagem excluídos com sucesso!' });
 
       } catch (error: any) {
           return res.status(500).json({ error: 'Erro ao excluir produto: ' + error.message });

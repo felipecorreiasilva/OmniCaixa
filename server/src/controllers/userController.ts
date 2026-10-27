@@ -124,10 +124,9 @@ export const UserController = {
                 updateData.password = await bcrypt.hash(password, saltRounds);
             }
 
-            // 2. Se um novo ficheiro foi enviado, define a nova URL
+            // 2. Se um novo ficheiro foi enviado, define o caminho relativo limpo
             if (avatarFile) {
-                const baseUrl = `${req.protocol}://${req.get('host')}`;
-                updateData.image_url = `${baseUrl}/uploads/users/${avatarFile.filename}`; 
+                updateData.image_url = `/uploads/users/${avatarFile.filename}`; 
             }
 
             // 3. Atualiza na base de dados
@@ -143,15 +142,8 @@ export const UserController = {
             // 4. Se o utilizador atualizou com um NOVO avatar e já tinha um avatar antigo, apaga o ficheiro do disco
             if (avatarFile && existingUser.image_url) {
                 try {
-                    let relativePath = existingUser.image_url;
-                    
-                    if (existingUser.image_url.startsWith('http')) {
-                        const parsedUrl = new URL(existingUser.image_url);
-                        relativePath = parsedUrl.pathname; // Fica com "/uploads/users/avatar-antigo.jpg"
-                    }
-
-                    // Sobe duas pastas a partir de 'controllers' para chegar à raiz e encontrar a pasta 'uploads'
-                    const oldAvatarPath = path.join(__dirname, '..', '..', relativePath);
+                    // Como já guardamos em caminho relativo, combinamos diretamente com o diretório raiz
+                    const oldAvatarPath = path.join(__dirname, '..', '..', existingUser.image_url);
 
                     if (fs.existsSync(oldAvatarPath)) {
                         fs.unlink(oldAvatarPath, (err) => {
@@ -187,7 +179,7 @@ export const UserController = {
                 return res.status(400).json({ error: 'Você não pode excluir sua própria conta de administrador.' });
             }
 
-            // 1. Buscar o usuário antes de apagar para obter o caminho do avatar antigo
+            // 1. Buscar o usuário antes de apagar para obter o caminho relativo do avatar
             const user = await UserModel.findById(Number(id));
 
             if (!user) {
@@ -204,20 +196,13 @@ export const UserController = {
             // 3. Apagar o ficheiro físico do avatar do disco (se existir)
             if (user.image_url) {
                 try {
-                    let relativePath = user.image_url;
-                    
-                    // Se for uma URL completa, extraímos apenas o pathname (/uploads/users/...)
-                    if (user.image_url.startsWith('http')) {
-                        const parsedUrl = new URL(user.image_url);
-                        relativePath = parsedUrl.pathname;
-                    }
-
-                    // Combina com o diretório raiz do backend a partir da pasta controllers
-                    const filePath = path.join(__dirname, '..', '..', relativePath);
+                    // Como já guardamos em caminho relativo, combinamos diretamente com o diretório raiz
+                    const filePath = path.join(__dirname, '..', '..', user.image_url);
 
                     if (fs.existsSync(filePath)) {
                         fs.unlink(filePath, (err) => {
                             if (err) console.error('Erro ao apagar o avatar do disco:', err);
+                            else console.log('Avatar físico apagado com sucesso:', filePath);
                         });
                     }
                 } catch (fileErr) {
