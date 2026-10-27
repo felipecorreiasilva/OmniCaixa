@@ -124,7 +124,7 @@ export default function ProductsPage() {
                     product={editingProduct}
                     onClose={() => setEditingProduct(null)}
                     onSuccess={() => {
-                        setEditingProduct(null)
+                        setEditingProduct(null);
                         loadProducts();
                     }}
                 />

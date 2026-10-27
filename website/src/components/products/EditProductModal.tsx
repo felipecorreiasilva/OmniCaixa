@@ -45,6 +45,9 @@ export default function EditProductModal({isOpen, onClose, onSuccess, product}: 
             if(imageFile) formData.append('image', imageFile);
 
             await productService.updateProduct(product.id, formData);
+
+            onSuccess();
+            
         }catch(err){
             alert('Erro ao atualizar produto');
             console.error(err);
@@ -58,7 +61,7 @@ export default function EditProductModal({isOpen, onClose, onSuccess, product}: 
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
                 <h2 className="text-xl font-bold mb-4 text-gray-800">Editar Produto #{product.id}</h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form className="space-y-4">
                     <div>
                         <label className="block text-sm text-gray-700 mb-1">Nome do Produto</label>
                         <input 
@@ -134,7 +137,8 @@ export default function EditProductModal({isOpen, onClose, onSuccess, product}: 
                                 </button>
 
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={handleSubmit}
                                     disabled={loading}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                                 >

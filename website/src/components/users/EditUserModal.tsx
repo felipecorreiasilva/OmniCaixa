@@ -87,7 +87,7 @@ export default function EditUserModal({ isOpen, onClose, onSuccess, user }: Edit
                 </div>
 
                 {/* Formulário */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form className="p-6 space-y-4">
                     {error && (
                         <div className="bg-red-50 text-red-600 text-xs p-3 rounded-xl border border-red-100">
                             {error}
@@ -232,7 +232,8 @@ export default function EditUserModal({ isOpen, onClose, onSuccess, user }: Edit
                             Cancelar
                         </button>
                         <button 
-                            type="submit"
+                            type="button"
+                            onClick={handleSubmit}
                             disabled={loading}
                             className="px-5 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition shadow-sm disabled:opacity-50 flex items-center gap-2"
                         >
