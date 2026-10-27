@@ -28,10 +28,10 @@ export const ProductController = {
     }
   },
 
-  // Criar um novo produto com suporte a upload de imagem
+  // Criar um novo produto com suporte a código de barras e upload de imagem
   async createProduct(req: Request, res: Response) {
     try {
-      const { name, price, stock, category } = req.body;
+      const { barcode, name, price, stock, category } = req.body;
 
       if (!name || price === undefined) {
         if (req.file) {
@@ -47,7 +47,14 @@ export const ProductController = {
         image_url = `/uploads/products/${req.file.filename}`;
       }
 
-      const newProduct = await ProductModel.create({ name, price, stock, category, image_url });
+      const newProduct = await ProductModel.create({ 
+        barcode: barcode || null, 
+        name, 
+        price, 
+        stock, 
+        category, 
+        image_url 
+      });
       return res.status(201).json(newProduct);
       
     } catch (error: any) {
@@ -58,11 +65,11 @@ export const ProductController = {
     }
   },
 
-  // Atualizar um produto existente com caminho relativo e remoção limpa da imagem antiga
+  // Atualizar um produto existente com suporte a código de barras e imagem
   async updateProduct(req: Request, res: Response) {
     try {
         const { id } = req.params;
-        const { name, price, stock, category } = req.body;
+        const { barcode, name, price, stock, category } = req.body;
         const imageFile = req.file;
 
         if (!name || price === undefined) {
@@ -83,6 +90,7 @@ export const ProductController = {
 
         // Objeto base para a atualização
         const updateData: any = {
+            barcode: barcode || null,
             name,
             price: Number(price),
             stock: stock !== undefined ? Number(stock) : undefined,
@@ -107,7 +115,6 @@ export const ProductController = {
         // 4. Se o produto foi atualizado E o utilizador enviou uma NOVA imagem, apaga a imagem antiga do disco
         if (imageFile && existingProduct.image_url) {
             try {
-                // Combina diretamente o caminho atual com o caminho relativo guardado na base de dados
                 const oldFilePath = path.join(__dirname, '..', '..', existingProduct.image_url);
 
                 if (fs.existsSync(oldFilePath)) {
@@ -134,8 +141,8 @@ export const ProductController = {
     }
   },
 
-    // Deletar um produto e a respetiva imagem do disco
-    async deleteProduct(req: Request, res: Response) {
+  // Deletar um produto e a respetiva imagem do disco
+  async deleteProduct(req: Request, res: Response) {
       try {
           const { id } = req.params;
 
@@ -152,8 +159,6 @@ export const ProductController = {
           // 3. Apagar o ficheiro físico da pasta uploads (se ele existir)
           if (product.image_url) {
               try {
-                  // Como já guardamos em caminho relativo (ex: /uploads/products/foto.jpg), 
-                  // combinamos diretamente com o diretório raiz do projeto.
                   const filePath = path.join(__dirname, '..', '..', product.image_url);
 
                   if (fs.existsSync(filePath)) {
@@ -172,5 +177,5 @@ export const ProductController = {
       } catch (error: any) {
           return res.status(500).json({ error: 'Erro ao excluir produto: ' + error.message });
       }
-    }
+  }
 };

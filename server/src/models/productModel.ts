@@ -2,13 +2,13 @@ import db from '../config/database';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export interface Product {
-  id?: number;
+  id: number;
+  barcode?: string | null;
   name: string;
   price: number;
   stock: number;
   category?: string;
-  image_url?: string;
-  created_at?: string;
+  image_url?: string | null;
 }
 
 export const ProductModel = {
@@ -25,23 +25,38 @@ export const ProductModel = {
     return rows[0] as Product;
   },
 
-  async create(product: Product): Promise<Product> {
+  async create(product: Omit<Product, 'id'>): Promise<Product> {
     const [result] = await db.execute<ResultSetHeader>(
-    'INSERT INTO products (name, price, stock, category, image_url) VALUES (?, ?, ?, ?, ?)',
-    [product.name, product.price, product.stock, product.category || 'Geral', product.image_url || null]
-  );
-    return { id: result.insertId, ...product };
+      'INSERT INTO products (barcode, name, price, stock, category, image_url) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        product.barcode ?? null, 
+        product.name, 
+        product.price, 
+        product.stock, 
+        product.category || 'Geral', 
+        product.image_url || null
+      ]
+    );
+    return { ...product, id: result.insertId };
   },
 
-  async update(id:number, product: Product): Promise<Product | null> {
+  async update(id: number, product: Partial<Product>): Promise<Product | null> {
     const [result] = await db.execute<ResultSetHeader>(
-      'UPDATE products SET name = ?, price = ?, stock = ?, category = ?, image_url = ? WHERE id = ?',
-      [product.name, product.price, product.stock, product.category || 'Geral', product.image_url || null, id]
+      'UPDATE products SET barcode = ?, name = ?, price = ?, stock = ?, category = ?, image_url = ? WHERE id = ?',
+      [
+        product.barcode ?? null, 
+        product.name ?? '', 
+        product.price ?? 0, 
+        product.stock ?? 0, 
+        product.category || 'Geral', 
+        product.image_url ?? null, 
+        id
+      ]
     );
     if (result.affectedRows === 0) {
       return null;
     } 
-    return { id, ...product };
+    return await this.findById(id);
   },
 
   async delete(id: number): Promise<boolean> {
