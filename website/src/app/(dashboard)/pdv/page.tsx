@@ -11,6 +11,9 @@ import PaymentMoneyModal from "@/components/pdv/PaymentMoneyModal";
 import PaymentCardPixModal from "@/components/pdv/PaymentCardPixModal";
 import { saleService } from "@/services/saleService";
 
+// Define a URL base da API a partir da variável de ambiente
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+
 export default function PDVPage() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -197,7 +200,7 @@ export default function PDVPage() {
                     <div className="w-16 h-16 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center p-1">
                       {product.image_url ? (
                         <img 
-                          src={product.image_url} 
+                          src={`${API_URL}${product.image_url}`} 
                           alt={product.name}
                           className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                         />
