@@ -2,14 +2,14 @@ import db from '../config/database';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export interface User {
-  id: number;                          // Compatível com MySQL Auto Increment
-  name: string;                        // Nome completo do funcionário/usuário
-  email: string;                       // E-mail usado para login
-  password: string;                    // Senha (armazenada com hash criptografado)
-  role: 'admin' | 'cashier' | 'manager'; // Nível de acesso essencial para o PDV
-  image_url?: string;                  // Foto de perfil (salva em uploads/users/)
-  created_at?: string;                 // Data de criação do registro
-  updated_at?: string;                 // Data da última atualização (opcional)
+    id: number;                          // Compatível com MySQL Auto Increment
+    name: string;                        // Nome completo do funcionário/usuário
+    email: string;                       // E-mail usado para login
+    password: string;                    // Senha (armazenada com hash criptografado)
+    role: 'admin' | 'cashier' | 'manager'; // Nível de acesso essencial para o PDV
+    image_url?: string | null;           // Foto de perfil (salva em uploads/users/ ou null)
+    created_at?: string;                 // Data de criação do registro
+    updated_at?: string;                 // Data da última atualização (opcional)
 }
 
 export const UserModel = {
@@ -21,7 +21,7 @@ export const UserModel = {
         return rows as Omit<User, 'password'>[];
     },
 
-    // Buscar usuário por ID (omitiendo a senha por segurança na maioria dos casos)
+    // Buscar usuário por ID (omitiendo a senha por segurança)
     async findById(id: number): Promise<Omit<User, 'password'> | null> {
         const [rows] = await db.query<RowDataPacket[]>(
             'SELECT id, name, email, role, image_url, created_at, updated_at FROM users WHERE id = ?',
@@ -58,24 +58,29 @@ export const UserModel = {
         return createdUser;
     },
 
-    // Atualizar usuário existente (omitiendo a senha na resposta)
-    async update(id: number, userData: { name?: string; email?: string; role?: string; image_url?: string | null }) {
-        const { name, email, role, image_url } = userData;
+    // Atualizar usuário existente (com suporte opcional a alteração de senha)
+    async update(id: number, userData: { name?: string; email?: string; password?: string; role?: string; image_url?: string | null }) {
+        const { name, email, password, role, image_url } = userData;
 
-        // Força a tipagem dos parâmetros ou ajusta para o formato que o mysql2 aceita sem reclamar
-        const [result] = await db.query<ResultSetHeader>(
-            'UPDATE users SET name = ?, email = ?, role = ?, image_url = ? WHERE id = ?',
-            [name, email, role, image_url || null, id] as any
-        );
-
-        if (result.affectedRows === 0) {
-            return null; // Nenhum usuário encontrado
+        // Se a senha foi enviada (já com hash), atualizamos também. Senão, mantemos a senha existente.
+        if (password) {
+            const [result] = await db.query<ResultSetHeader>(
+                'UPDATE users SET name = ?, email = ?, password = ?, role = ?, image_url = ? WHERE id = ?',
+                [name, email, password, role, image_url || null, id]
+            );
+            if (result.affectedRows === 0) return null;
+        } else {
+            const [result] = await db.query<ResultSetHeader>(
+                'UPDATE users SET name = ?, email = ?, role = ?, image_url = ? WHERE id = ?',
+                [name, email, role, image_url || null, id]
+            );
+            if (result.affectedRows === 0) return null;
         }
 
         return await this.findById(id);
     },
 
-    // Deletar usuário (Regra de negócio: garantido via controller/middleware que apenas o admin executa)
+    // Deletar usuário
     async delete(id: number): Promise<boolean> {
         const [result] = await db.query<ResultSetHeader>(
             'DELETE FROM users WHERE id = ?',

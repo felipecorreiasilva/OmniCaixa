@@ -35,26 +35,36 @@ export const UserController = {
         }
     },
     
-    // Criar / Registrar um novo funcionário
+    // Criar / Registrar um novo funcionário com caminho relativo e tratamento de órfãos
     async createUser(req: Request, res: Response) {
         try {
             const { name, email, password, role } = req.body;
+            const avatarFile = req.file;
 
             if (!name || !email || !password || !role) {
+                if (avatarFile) {
+                    fs.unlink(avatarFile.path, () => {});
+                }
                 return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
             }
 
             // 1. Verifica se já existe um usuário com esse e-mail
             const userExists = await UserModel.findByEmail(email);
             if (userExists) {
+                if (avatarFile) {
+                    fs.unlink(avatarFile.path, () => {});
+                }
                 return res.status(400).json({ error: 'E-mail já cadastrado no sistema.' });
             }
 
             // 2. Criptografa a senha antes de salvar no banco
             const hashedPassword = await bcrypt.hash(password, 8);
 
-            // 3. Pega o caminho da foto de perfil se foi enviada via Multer
-            const image_url = req.file ? req.file.filename : undefined;
+            // 3. Define o caminho relativo correto ou null se nenhum avatar foi enviado
+            let image_url: string | null = null;
+            if (avatarFile) {
+                image_url = `/uploads/users/${avatarFile.filename}`;
+            }
 
             // 4. Salva no banco através do Model
             const newUser = await UserModel.create({
@@ -71,6 +81,9 @@ export const UserController = {
             });
 
         } catch (error: any) {
+            if (req.file) {
+                fs.unlink(req.file.path, () => {});
+            }
             return res.status(500).json({ error: 'Erro ao cadastrar usuário: ' + error.message });
         }
     },

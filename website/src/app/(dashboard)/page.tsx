@@ -101,7 +101,7 @@ export default function DashboardHomePage() {
             className="bg-white p-6 rounded-3xl border border-slate-400 hover:border-cyan-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
           >
             <div>
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 mb-5 group-hover:bg-cyan-50 group-hover:text-cyan-600 transition-all duration-300 shadow-sm">
+              <div className="w-14 h-14 bg-cyan-50 border border-cyan-100 rounded-2xl flex items-center justify-center text-cyan-600 mb-5 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm">
                 <Package size={26} />
               </div>
               <h3 className="text-xl font-bold text-slate-900 group-hover:text-cyan-600 transition">Gestão de Produtos</h3>
@@ -121,7 +121,7 @@ export default function DashboardHomePage() {
             className="bg-white p-6 rounded-3xl border border-slate-400 hover:border-cyan-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
           >
             <div>
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 mb-5 group-hover:bg-cyan-50 group-hover:text-cyan-600 transition-all duration-300 shadow-sm">
+              <div className="w-14 h-14 bg-cyan-50 border border-cyan-100 rounded-2xl flex items-center justify-center text-cyan-600 mb-5 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm">
                 <Users size={26} />
               </div>
               <h3 className="text-xl font-bold text-slate-900 group-hover:text-cyan-600 transition">Funcionários</h3>

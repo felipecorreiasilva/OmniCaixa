@@ -34,18 +34,26 @@ export const ProductController = {
       const { name, price, stock, category } = req.body;
 
       if (!name || price === undefined) {
+        if (req.file) {
+          fs.unlink(req.file.path, () => {});
+        }
         return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
       }
-      // 1. Verifica se um ficheiro de imagem foi enviado pelo Multer
-      let image_url = req.body.image_url || ''; // Mantém caso venha por URL direta
+
+      let image_url = req.body.image_url || ''; 
+      
+      // Se um ficheiro foi enviado, guarda apenas o caminho relativo limpo
       if (req.file) {
-        // 2. Constrói a URL pública base do servidor dinamicamente
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        image_url = `${baseUrl}/uploads/products/${req.file.filename}`;
+        image_url = `/uploads/products/${req.file.filename}`;
       }
+
       const newProduct = await ProductModel.create({ name, price, stock, category, image_url });
       return res.status(201).json(newProduct);
+      
     } catch (error: any) {
+      if (req.file) {
+        fs.unlink(req.file.path, () => {});
+      }
       return res.status(500).json({ error: 'Erro ao criar produto: ' + error.message });
     }
   },
