@@ -42,7 +42,7 @@ export default function EditProductModal({isOpen, onClose, onSuccess, product}: 
             formData.append('price', price);
             formData.append('stock', stock);
             if(category) formData.append('category', category);
-            if(imageFile) formData.append('imageFile', imageFile);
+            if(imageFile) formData.append('image', imageFile);
 
             await productService.updateProduct(product.id, formData);
         }catch(err){
