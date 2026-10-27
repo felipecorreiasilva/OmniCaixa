@@ -46,7 +46,8 @@ export default function PDVPage() {
 
     setCart((prevCart) => {
       const itemExists = prevCart.find((item) => item.id === product.id);
-      const isKg = product.name.toLowerCase().includes("(kg)") || product.name.toLowerCase().includes("kg");
+      const nameLower = product.name.toLowerCase();
+      const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
       
       if (itemExists) {
         const step = isKg ? 0.100 : 1;
@@ -76,7 +77,8 @@ export default function PDVPage() {
     setCart((prevCart) => {
       return prevCart.reduce<CartItem[]>((acc, item) => {
         if (item.id === id) {
-          const isKg = item.name.toLowerCase().includes("(kg)") || item.name.toLowerCase().includes("kg");
+          const nameLower = item.name.toLowerCase();
+          const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
           const step = isKg ? 0.050 : 1; 
           const currentQty = typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity)) || 0;
           const newQuantity = Number((currentQty + (delta * step)).toFixed(3));
@@ -189,7 +191,14 @@ export default function PDVPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product) => {
-              const isKg = product.name.toLowerCase().includes("(kg)") || product.name.toLowerCase().includes("kg");
+              const nameLower = product.name.toLowerCase();
+              const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
+              
+              // Formatação do estoque: inteiros limpos para unidades, 3 casas decimais estritas para kg
+              const formattedStock = isKg 
+                ? Number(product.stock).toFixed(3) 
+                : Math.round(Number(product.stock));
+
               return (
                 <div
                   key={product.id}
@@ -218,7 +227,9 @@ export default function PDVPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Estoque: {product.stock} {isKg ? 'kg' : 'un.'}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Estoque: {formattedStock} {isKg ? 'kg' : 'un.'}
+                      </p>
                     </div>
                   </div>
 
@@ -260,7 +271,8 @@ export default function PDVPage() {
             </div>
           ) : (
             cart.map((item) => {
-              const isKg = item.name.toLowerCase().includes("(kg)") || item.name.toLowerCase().includes("kg");
+              const nameLower = item.name.toLowerCase();
+              const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
               const pesoEmGramas = isKg ? Math.round((item.quantity || 0) * 1000) : null;
 
               return (

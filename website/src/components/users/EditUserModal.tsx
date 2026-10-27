@@ -69,8 +69,8 @@ export default function EditUserModal({ isOpen, onClose, onSuccess, user }: Edit
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-xl w-full mx-auto max-w-md overflow-hidden border border-gray-100">
                 
                 {/* Cabeçalho do Modal */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">

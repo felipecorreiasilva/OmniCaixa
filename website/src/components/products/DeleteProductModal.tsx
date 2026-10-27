@@ -33,8 +33,8 @@ export default function DeleteProductModal({ isOpen, onClose, onSuccess, product
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-md p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-md px-4">
+            <div className="bg-white rounded-xl p-6 w-full mx-auto max-w-md shadow-2xl">
                 <div className="text-center">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4 text-red-600">
                         <AlertTriangle size={24} />

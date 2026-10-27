@@ -51,8 +51,8 @@ export default function CreateProductModal({ isOpen, onClose, onSuccess }: Creat
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-md">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-md px-4">
+            <div className="bg-white rounded-xl p-6 w-full mx-auto max-w-md shadow-2xl">
                 <h2 className="text-xl font-bold mb-4 text-gray-800">Cadastrar Novo Produto</h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
