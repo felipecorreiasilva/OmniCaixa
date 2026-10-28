@@ -2,7 +2,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useState, useEffect } from "react";
-import { Users as UsersIcon, Shield, UserPlus, Mail, Trash2, Edit } from "lucide-react";
+import { Users as UsersIcon, Shield, UserPlus, Mail, Trash2, Edit, Search } from "lucide-react";
 import { userService } from "@/services/userService";
 import { User } from "@/types/user";
 import CreateUserModal from "@/components/users/CreateUserModal";
@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
+    const [searchTerm, setSearchTerm] = useState(""); // Estado para a pesquisa
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -20,7 +21,6 @@ export default function UsersPage() {
 
     // Carregar utilizadores da API ao montar o componente
     useEffect(() => {
-        // Só carrega os utilizadores se o utilizador logado for admin ou manager
         if (user && (user.role === 'admin' || user.role === 'manager')) {
             loadUsers();
         }
@@ -38,11 +38,22 @@ export default function UsersPage() {
         }
     }
 
+    // Filtra os utilizadores com base no nome, email ou cargo
+    const filteredUsers = users.filter((u) => {
+        const term = searchTerm.toLowerCase();
+        const matchesName = u.name ? u.name.toLowerCase().includes(term) : false;
+        const matchesEmail = u.email ? u.email.toLowerCase().includes(term) : false;
+        const matchesRole = u.role ? u.role.toLowerCase().includes(term) : false;
+
+        return matchesName || matchesEmail || matchesRole;
+    });
+
     return (
         <ProtectedRoute allowedRoles={['admin','manager']}>
-            <div className="p-6 max-w-7xl mx-auto">
+            <div className="p-6 max-w-7xl mx-auto space-y-6">
+                
                 {/* Cabeçalho da Página */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                             <UsersIcon className="w-7 h-7 text-cyan-600" />
@@ -62,14 +73,28 @@ export default function UsersPage() {
                     </button>
                 </div>
 
+                {/* Barra de Pesquisa */}
+                <div className="relative w-full sm:w-96">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <Search size={18} />
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Pesquisar por nome, email ou cargo..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm transition"
+                    />
+                </div>
+
                 {/* Conteúdo dinâmico: Tabela (Desktop) ou Cards (Mobile) */}
                 {loadingUsers ? (
                     <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border border-gray-200 shadow-sm">
                         A carregar utilizadores...
                     </div>
-                ) : users.length === 0 ? (
-                    <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                        Nenhum utilizador encontrado.
+                ) : filteredUsers.length === 0 ? (
+                    <div className="py-12 text-center text-gray-400 bg-white rounded-2xl border border-gray-200 shadow-sm">
+                        Nenhum utilizador encontrado para "{searchTerm}".
                     </div>
                 ) : (
                     <>
@@ -86,7 +111,7 @@ export default function UsersPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 text-sm">
-                                        {users.map((u) => (
+                                        {filteredUsers.map((u) => (
                                             <tr key={u.id} className="hover:bg-gray-50/50 transition">
                                                 {/* Coluna 1: Nome com Avatar */}
                                                 <td className="py-4 px-6">
@@ -148,7 +173,7 @@ export default function UsersPage() {
 
                         {/* 2. VISÃO EM CARDS (Apenas para telas pequenas - Telemóveis) */}
                         <div className="grid grid-cols-1 gap-4 md:hidden">
-                            {users.map((u) => (
+                            {filteredUsers.map((u) => (
                                 <div 
                                     key={u.id} 
                                     className="bg-white p-4 rounded-2xl shadow-md border-2 border-slate-300 flex flex-col justify-between gap-3"
