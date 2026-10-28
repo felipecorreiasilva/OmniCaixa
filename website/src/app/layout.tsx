@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OminiCaixa - Sistema de Gestão de PDV",
+  title: "OmniCaixa - Sistema de Gestão de PDV",
   description: "Sistema de gestão de ponto de venda (PDV) para lojas e comércios, desenvolvido com Next.js, React, TypeScript e Tailwind CSS.",
 };
 
