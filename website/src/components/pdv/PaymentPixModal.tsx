@@ -4,19 +4,19 @@ import { useState, useEffect } from "react";
 import { QrCode, X, Smartphone, Loader2, Copy, Check } from "lucide-react";
 import { pixService } from "@/services/pixService";
 
-interface PaymentCardPixModalProps {
+interface PaymentPixModalProps {
   isOpen: boolean;
   onClose: () => void;
   totalAmount: number;
   onConfirmSale: (method: string) => void;
 }
 
-export default function PaymentCardPixModal({
+export default function PaymentPixModal({
   isOpen,
   onClose,
   totalAmount,
   onConfirmSale,
-}: PaymentCardPixModalProps) {
+}: PaymentPixModalProps) {
   const [loadingPix, setLoadingPix] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
   const [pixCopyPaste, setPixCopyPaste] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export default function PaymentCardPixModal({
         // Se o banco confirmar que o Pix foi pago (status CONCLUIDA)
         if (response && response.status === "CONCLUIDA") {
           clearInterval(interval);
-          await onConfirmSale("Pix"); // Regista a venda no sistema
+          await onConfirmSale("pix"); // Regista a venda no sistema
           onClose(); // Fecha o modal automaticamente
         }
       } catch (error) {

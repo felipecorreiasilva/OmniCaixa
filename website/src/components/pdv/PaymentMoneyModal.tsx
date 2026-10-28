@@ -29,7 +29,7 @@ export default function PaymentMoneyModal({
     if (!isValidPayment || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await onConfirmSale("Dinheiro", amountPaid, change);
+      await onConfirmSale("money", amountPaid, change);
       setAmountPaidStr("");
       onClose();
     } catch (error) {

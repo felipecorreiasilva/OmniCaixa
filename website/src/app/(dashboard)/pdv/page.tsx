@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { productService } from "@/services/productService";
 import { Product, CartItem } from "@/types/product";
-import { ShoppingCart, Search, Trash2, Plus, Minus, CreditCard, DollarSign, Loader2, Scale } from "lucide-react";
+import { ShoppingCart, Search, Trash2, Plus, Minus, CreditCard, DollarSign, Loader2, Scale, QrCode } from "lucide-react";
 
-// Importação dos Modais de Pagamento que criaste
+// Importação dos Modais de Pagamento
 import PaymentMoneyModal from "@/components/pdv/PaymentMoneyModal";
-import PaymentCardPixModal from "@/components/pdv/PaymentCardPixModal";
+import PaymentCardModal from "@/components/pdv/PaymentCardModal"; // Modal para Cartão de Crédito/Débito (Maquininha)
+import PaymentPixModal from "@/components/pdv/PaymentPixModal";       // Modal exclusivo para Pix da Efí
 import { saleService } from "@/services/saleService";
 
 // Define a URL base da API a partir da variável de ambiente
@@ -21,9 +22,10 @@ export default function PDVPage() {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Estados para controlar a abertura dos modais de pagamento
+  // Estados independentes para controlar a abertura de cada modal de pagamento
   const [isMoneyModalOpen, setIsMoneyModalOpen] = useState(false);
-  const [isCardPixModalOpen, setIsCardPixModalOpen] = useState(false);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
   // Carrega os produtos reais do banco de dados ao abrir a página
   useEffect(() => {
@@ -214,7 +216,6 @@ export default function PDVPage() {
               const nameLower = product.name.toLowerCase();
               const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
               
-              // Formatação do estoque: inteiros limpos para unidades, 3 casas decimais estritas para kg
               const formattedStock = isKg 
                 ? Number(product.stock).toFixed(3) 
                 : Math.round(Number(product.stock));
@@ -365,27 +366,36 @@ export default function PDVPage() {
           )}
         </div>
 
-        {/* Rodapé do Carrinho e Botões de Pagamento */}
+        {/* Rodapé do Carrinho e Botões de Pagamento (3 Botões Separados) */}
         <div className="p-4 border-t border-slate-200 bg-slate-50/50 space-y-4">
           <div className="flex justify-between items-center text-lg font-bold text-slate-900">
             <span>Total a Pagar:</span>
             <span className="text-cyan-600">R$ {totalCart.toFixed(2)}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               disabled={cart.length === 0}
               onClick={() => setIsMoneyModalOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition flex flex-col items-center justify-center gap-1 text-xs disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
               <DollarSign size={16} /> Dinheiro
             </button>
+
             <button
               disabled={cart.length === 0}
-              onClick={() => setIsCardPixModalOpen(true)}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              onClick={() => setIsCardModalOpen(true)}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-xl transition flex flex-col items-center justify-center gap-1 text-xs disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
-              <CreditCard size={16} /> Cartão / Pix
+              <CreditCard size={16} /> Cartão
+            </button>
+
+            <button
+              disabled={cart.length === 0}
+              onClick={() => setIsPixModalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition flex flex-col items-center justify-center gap-1 text-xs disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            >
+              <QrCode size={16} /> Pix
             </button>
           </div>
         </div>
@@ -400,9 +410,16 @@ export default function PDVPage() {
         onConfirmSale={handleFinalizeSale}
       />
 
-      <PaymentCardPixModal
-        isOpen={isCardPixModalOpen}
-        onClose={() => setIsCardPixModalOpen(false)}
+      <PaymentCardModal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+        totalAmount={totalCart}
+        onConfirmSale={handleFinalizeSale}
+      />
+
+      <PaymentPixModal
+        isOpen={isPixModalOpen}
+        onClose={() => setIsPixModalOpen(false)}
         totalAmount={totalCart}
         onConfirmSale={handleFinalizeSale}
       />
