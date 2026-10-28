@@ -10,9 +10,11 @@ export interface SaleItemInput {
 export interface CreateSaleInput {
     payment_method: string;
     total_amount: number;
-    amount_paid: number;
+    amount_paid: number | null;
     change: number;
     items: SaleItemInput[];
+    txid?: string | null;     
+    status?: string;          
 }
 
 export const SaleModel = {
@@ -22,17 +24,36 @@ export const SaleModel = {
         try {
             await connection.beginTransaction();
 
-            // 1. Assegura que os dados principais não são undefined
-            const totalAmount = Number(data.total_amount) || 0;
-            const paymentMethod = data.payment_method || 'Dinheiro';
+            // 1. Validação estrita (Blindagem contra dados nulos ou maliciosos)
+            if (!data.payment_method || typeof data.payment_method !== 'string') {
+                throw new Error("O método de pagamento é obrigatório e deve ser válido.");
+            }
+
+            const totalAmount = Number(data.total_amount);
+            if (isNaN(totalAmount) || totalAmount <= 0) {
+                throw new Error("O valor total da venda é inválido.");
+            }
+
+            const paymentMethod = data.payment_method;
             const amountPaid = data.amount_paid !== undefined && data.amount_paid !== null ? Number(data.amount_paid) : null;
             const saleChange = data.change !== undefined && data.change !== null ? Number(data.change) : 0;
-            const items = Array.isArray(data.items) ? data.items : [];
+            const txid = data.txid !== undefined ? data.txid : null;
+            
+            // O status é obrigatório ou segue a regra explícita enviada pelo Controller
+            const status = data.status;
+            if (!status || !['PENDENTE', 'CONCLUIDA', 'CANCELADA'].includes(status)) {
+                throw new Error("Status da venda inválido ou não informado.");
+            }
 
-            // 2. Insere o cabeçalho da venda na tabela 'sales'
+            const items = Array.isArray(data.items) ? data.items : [];
+            if (items.length === 0) {
+                throw new Error("A venda não pode ser finalizada sem itens.");
+            }
+
+            // 2. Insere o cabeçalho da venda na tabela 'sales' com os dados validados
             const [saleResult] = await connection.execute<ResultSetHeader>(
-                `INSERT INTO sales (total_amount, payment_method, amount_paid, \`change\`) VALUES (?, ?, ?, ?)`,
-                [totalAmount, paymentMethod, amountPaid, saleChange]
+                `INSERT INTO sales (total_amount, payment_method, amount_paid, \`change\`, txid, status) VALUES (?, ?, ?, ?, ?, ?)`,
+                [totalAmount, paymentMethod, amountPaid, saleChange, txid, status]
             );
 
             const saleId = saleResult.insertId;
@@ -43,8 +64,7 @@ export const SaleModel = {
                 const quantity = Number(item.quantity) || 0;
                 const unitPrice = Number(item.unit_price) || 0;
 
-                // Validação de segurança para o item
-                if (!productId || quantity <= 0) {
+                if (!productId || quantity <= 0 || unitPrice < 0) {
                     throw new Error(`Item inválido no carrinho: produto ID ${item.product_id}, quantidade ${item.quantity}`);
                 }
 

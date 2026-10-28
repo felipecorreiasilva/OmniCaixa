@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS sales (
     payment_method VARCHAR(50) NOT NULL,
     amount_paid DECIMAL(10, 2) NULL,
     `change` DECIMAL(10, 2) NULL,
+    txid VARCHAR(255) NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDENTE',      
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
