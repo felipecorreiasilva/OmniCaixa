@@ -6,10 +6,10 @@ interface CreateProductModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    // Opcionalmente, podes adicionar productToEdit aqui se quiseres reaproveitar para edição no futuro
 }
 
 export default function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProductModalProps) {
+    const [barcode, setBarcode] = useState('');
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [stock, setStock] = useState('');
@@ -24,17 +24,22 @@ export default function CreateProductModal({ isOpen, onClose, onSuccess }: Creat
         try {
             setLoading(true);
             const formData = new FormData();
+            
+            // Adiciona o código de barras se o operador tiver preenchido ou bipedado
+            if (barcode) formData.append('barcode', barcode);
+            
             formData.append('name', name);
             formData.append('price', price);
             formData.append('stock', stock);
             if (category) formData.append('category', category);
             if (imageFile) formData.append('image', imageFile);
 
-            // Importação dinâmica ou direta do productService
+            // Importação dinâmica do productService
             const { productService } = await import('@/services/productService');
             await productService.createProduct(formData);
 
-            // Limpa o form
+            // Limpa o formulário após o sucesso
+            setBarcode('');
             setName('');
             setPrice('');
             setStock('');
@@ -56,6 +61,21 @@ export default function CreateProductModal({ isOpen, onClose, onSuccess }: Creat
                 <h2 className="text-xl font-bold mb-4 text-gray-800">Cadastrar Novo Produto</h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Campo de Código de Barras */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Código de Barras (EAN-13 / Opcional)
+                        </label>
+                        <input
+                            type="text"
+                            value={barcode}
+                            onChange={(e) => setBarcode(e.target.value)}
+                            maxLength={13}
+                            className="text-black w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Passe o leitor ou digite o código..."
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
                         <input
