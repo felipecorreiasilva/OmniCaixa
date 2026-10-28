@@ -2,3 +2,7 @@ node_modules/
 .env
 dist/
 .next/
+
+# Ignorar certificados digitais de pagamento
+server/certs/
+*.p12
