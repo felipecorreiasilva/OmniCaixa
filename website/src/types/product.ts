@@ -1,5 +1,6 @@
 export interface Product {
   id?: number;
+  barcode?: string | null;
   name: string;
   price: number;
   stock: number;
@@ -10,6 +11,7 @@ export interface Product {
 
 export interface CartItem {
   id: number;
+  barcode?: string | null;
   name: string;
   price: number;
   stock: number;

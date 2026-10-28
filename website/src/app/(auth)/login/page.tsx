@@ -11,17 +11,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   const { user, loading: authLoading, login } = useAuth();
 
   useEffect(() => {
-    // Se o usuário já estiver logado, redireciona para a página principal do PDV
-    if (!authLoading && user){
+    // Se o usuário já estiver logado, redireciona para a página principal
+    if (!authLoading && user) {
       router.push("/");
     }
   }, [user, authLoading, router]);
 
-  // Enquanto o contexto verifica o localStorage, mostra um loader para evitar "flicker" da tela de login
+  // Enquanto o contexto verifica o localStorage, mostra um loader para evitar "flicker"
   if (authLoading || user) {
     return (
       <div className="h-screen w-screen bg-black flex items-center justify-center">
@@ -36,11 +36,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Utiliza o authService para realizar a chamada ao backend
+      // Realiza a chamada ao backend
       const { token, user } = await authService.login({ email, password });
       
-      // Salva no contexto de autenticação e redireciona para a aplicação
+      // Salva no contexto de autenticação
       login(token, user);
+
+      // Força um hard reload para a página inicial, garantindo zero resíduos de estado
+      window.location.href = "/";
     } catch (err: any) {
       console.error(err);
       setError(
