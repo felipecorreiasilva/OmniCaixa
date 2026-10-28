@@ -146,10 +146,29 @@ export default function PDVPage() {
     }
   };
 
-  // Filtra os produtos com base na barra de pesquisa
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtra os produtos com base no nome ou no código de barras
+  const filteredProducts = products.filter((p) => {
+    const term = searchTerm.toLowerCase();
+    const matchesName = p.name.toLowerCase().includes(term);
+    const matchesBarcode = p.barcode ? p.barcode.toLowerCase().includes(term) : false;
+    
+    return matchesName || matchesBarcode;
+  });
+
+  // Se o operador bipar o código de barras exato e carregar Enter na barra de pesquisa
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchTerm.trim() !== '') {
+      // Procura se existe algum produto com exatamente esse barcode ou nome exato
+      const exactMatch = products.find(
+        (p) => p.barcode === searchTerm.trim() || p.name.toLowerCase() === searchTerm.toLowerCase()
+      );
+
+      if (exactMatch) {
+        addToCart(exactMatch);
+        setSearchTerm(''); // Limpa a barra de pesquisa para a próxima leitura
+      }
+    }
+  };
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-slate-50 overflow-hidden text-slate-800">
@@ -174,6 +193,7 @@ export default function PDVPage() {
               placeholder="Pesquisar produto ou código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm transition"
             />
           </div>
@@ -233,13 +253,21 @@ export default function PDVPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-base font-bold text-cyan-600">
-                      R$ {Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">{isKg ? '/kg' : ''}</span>
-                    </span>
-                    <span className="p-1.5 bg-cyan-50 text-cyan-600 border border-cyan-100 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition">
-                      <Plus size={14} /> Adicionar
-                    </span>
+                  <div className="mt-4 pt-2 border-t border-slate-100 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400 font-mono">
+                        {product.barcode || "Sem código de barras"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-bold text-cyan-600">
+                        R$ {Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">{isKg ? '/kg' : ''}</span>
+                      </span>
+                      <span className="p-1.5 bg-cyan-50 text-cyan-600 border border-cyan-100 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition">
+                        <Plus size={14} /> Adicionar
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { productService } from '@/services/productService';
 import { Product } from '@/types/product';
 import CreateProductModal from '@/components/products/CreateProductModal';
-import { SquarePen, Trash } from 'lucide-react';
+import { SquarePen, Trash, Search } from 'lucide-react';
 import EditProductModal from '@/components/products/EditProductModal';
 import DeleteProductModal from '@/components/products/DeleteProductModal';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -13,6 +13,7 @@ export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState(''); // Estado para a barra de pesquisa
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -35,10 +36,22 @@ export default function ProductsPage() {
         }
     }
 
+    // Filtra os produtos com base no nome ou no código de barras
+    const filteredProducts = products.filter((product) => {
+        const term = searchTerm.toLowerCase();
+        const matchesName = product.name.toLowerCase().includes(term);
+        const matchesBarcode = product.barcode ? product.barcode.toLowerCase().includes(term) : false;
+        const matchesCategory = product.category ? product.category.toLowerCase().includes(term) : false;
+
+        return matchesName || matchesBarcode || matchesCategory;
+    });
+
     return (
         <ProtectedRoute allowedRoles={['admin', 'manager']}>
-            <div className="p-6 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
+            <div className="p-6 max-w-7xl mx-auto space-y-6">
+                
+                {/* Cabeçalho e Botão de Novo Produto */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800">Gestão de Produtos e Estoque</h1>
                         <p className="text-sm text-gray-500">Cadastre e gerencie os itens disponíveis no PDV.</p>
@@ -51,12 +64,28 @@ export default function ProductsPage() {
                     </button>
                 </div>
 
+                {/* Barra de Pesquisa */}
+                <div className="relative w-full sm:w-96">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <Search size={18} />
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Pesquisar por nome, código de barras ou categoria..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition"
+                    />
+                </div>
+
                 {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
 
                 {loading ? (
                     <div className="text-center py-6 text-gray-500">A carregar produtos...</div>
-                ) : products.length === 0 ? (
-                    <div className="text-center py-6 text-gray-500">Nenhum produto cadastrado.</div>
+                ) : filteredProducts.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-200">
+                        Nenhum produto encontrado para "{searchTerm}".
+                    </div>
                 ) : (
                     <>
                         {/* 1. VISÃO EM TABELA (Apenas para telas médias e grandes - Desktop) */}
@@ -65,6 +94,7 @@ export default function ProductsPage() {
                                 <thead>
                                     <tr className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b">
                                         <th className="p-4">ID</th>
+                                        <th className="p-4">Cód. de Barras</th>
                                         <th className="p-4">Nome do Produto</th>
                                         <th className="p-4">Categoria</th>
                                         <th className="p-4">Preço (R$)</th>
@@ -73,7 +103,7 @@ export default function ProductsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
-                                    {products.map((product) => {
+                                    {filteredProducts.map((product) => {
                                         const nameLower = product.name.toLowerCase();
                                         const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
                                         
@@ -85,6 +115,9 @@ export default function ProductsPage() {
                                         return (
                                             <tr key={product.id} className="hover:bg-gray-50">
                                                 <td className="p-4 font-mono text-gray-500">#{product.id}</td>
+                                                <td className="p-4 font-mono text-xs text-gray-600">
+                                                    {product.barcode || <span className="text-slate-400 italic">Sem código</span>}
+                                                </td>
                                                 <td className="p-4 font-medium text-gray-900">{product.name}</td>
                                                 <td className="p-4 text-gray-600">{product.category || 'Geral'}</td>
                                                 <td className="p-4">R$ {Number(product.price).toFixed(2)}</td>
@@ -118,7 +151,7 @@ export default function ProductsPage() {
 
                         {/* 2. VISÃO EM CARDS (Apenas para telas pequenas - Telemóveis) */}
                         <div className="grid grid-cols-1 gap-4 md:hidden">
-                            {products.map((product) => {
+                            {filteredProducts.map((product) => {
                                 const nameLower = product.name.toLowerCase();
                                 const isKg = nameLower.includes("(kg)") || nameLower.includes("kg");
                                 const formattedStock = isKg 
@@ -134,9 +167,14 @@ export default function ProductsPage() {
                                             <div>
                                                 <span className="text-xs font-mono text-slate-400">#{product.id}</span>
                                                 <h3 className="font-bold text-slate-900 text-base">{product.name}</h3>
-                                                <span className="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full mt-1">
-                                                    {product.category || 'Geral'}
-                                                </span>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
+                                                        {product.category || 'Geral'}
+                                                    </span>
+                                                    <span className="text-xs font-mono text-slate-500">
+                                                        {product.barcode || 'Sem código'}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-sm font-bold text-blue-600">
