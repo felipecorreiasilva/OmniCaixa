@@ -51,8 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(newToken);
       setUser(newUser);
 
-      // Redireciona para o painel de PDV usando Expo Router
-      router.replace("/(dashboard)/pdv");
+      // Redireciona para o Painel Principal usando Expo Router
+      router.replace("/(dashboard)");
     } catch (error) {
       console.error("Erro ao salvar dados de login:", error);
     }

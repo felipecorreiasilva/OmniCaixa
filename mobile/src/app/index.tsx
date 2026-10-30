@@ -10,8 +10,8 @@ export default function HomeScreen() {
 
   const handleWordPress = () => {
     if (isAuthenticated) {
-      // Redireciona para o PDV dentro do grupo protegido (dashboard)
-      router.push('/(dashboard)/pdv'); 
+      // Redireciona para o Painel Principal protegido (dashboard)
+      router.push('/(dashboard)'); 
     } else {
       // Redireciona para o login dentro do grupo de autenticação
       router.push('/(auth)/login'); 
