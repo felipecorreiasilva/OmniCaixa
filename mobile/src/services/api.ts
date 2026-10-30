@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3333', 
+  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3333',
 });
 
 // 1. Interceptor de Requisição: Injeta o token JWT em TODAS as requisições
