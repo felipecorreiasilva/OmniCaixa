@@ -4,13 +4,15 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/user";
 import { authService } from "@/services/authService";
+import { userService } from "@/services/userService";
+import { tokenService } from "@/services/tokenService";
 
 interface AuthContextData {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string) => void;
   logout: () => void;
 }
 
@@ -22,42 +24,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega os dados salvos no localStorage ao iniciar a aplicação
+  // Carrega o token e valida/busca os dados reais do usuário no backend ao iniciar
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    async function initializeAuth() {
+      const storedToken = localStorage.getItem("token");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken) {
+        setToken(storedToken);
+        
+        try {
+          // Extrai o ID do usuário diretamente do token JWT
+          const userId = tokenService.getUserIdFromToken(storedToken);
+
+          if (userId) {
+            // Busca os dados atualizados e verdadeiros diretamente na base de dados
+            const freshUserData = await userService.getUserById(userId);
+            setUser(freshUserData);
+          } else {
+            throw new Error("ID inválido no token.");
+          }
+        } catch (error) {
+          console.error("Sessão inválida ou erro ao carregar usuário:", error);
+          // Se o token for inválido ou expirar, limpa tudo
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+        }
+      }
+
+      setLoading(false);
     }
 
-    setLoading(false);
+    initializeAuth();
   }, []);
 
-  // Função chamada no login bem-sucedido
-  const login = (newToken: string, newUser: User) => {
+  // Função chamada no login bem-sucedido (agora só precisa do token)
+  const login = async (newToken: string) => {
     localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
-
     setToken(newToken);
-    setUser(newUser);
+
+    try {
+      // Extrai o ID e busca os dados do usuário recém-logado
+      const userId = tokenService.getUserIdFromToken(newToken);
+      if (userId) {
+        const freshUserData = await userService.getUserById(userId);
+        setUser(freshUserData);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário após login:", error);
+    }
 
     // Redireciona para a tela inicial do dashboard
     router.push("/");
   };
 
-  // Função para deslogar o usuário (integrada com o back-end)
+  // Função para deslogar o usuário
   const logout = async () => {
     try {
-      // Opcional: Avisa o servidor para encerrar a sessão
       await authService.logout();
     } catch (error) {
       console.error("Erro ao terminar sessão no servidor:", error);
     } finally {
-      // Limpa os dados locais independentemente da resposta da API
+      // Limpa apenas o token (já não guardamos 'user' no localStorage)
       localStorage.removeItem("token");
-      localStorage.removeItem("user");
 
       setToken(null);
       setUser(null);

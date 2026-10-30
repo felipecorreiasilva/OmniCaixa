@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import { productService } from '@/services/productService';
 import { Product } from '@/types/product';
 import CreateProductModal from '@/components/products/CreateProductModal';
-import { SquarePen, Trash, Search } from 'lucide-react';
+import { SquarePen, Trash, Search, Image as ImageIcon } from 'lucide-react';
 import EditProductModal from '@/components/products/EditProductModal';
 import DeleteProductModal from '@/components/products/DeleteProductModal';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.107:3333";
 
 export default function ProductsPage() {
+    const { user } = useAuth(); // Obtém o utilizador logado para verificar o cargo (role)
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,7 +40,7 @@ export default function ProductsPage() {
         }
     }
 
-    // Filtra os produtos com base no nome ou no código de barras
+    // Filtra os produtos com base no nome, código de barras ou categoria
     const filteredProducts = products.filter((product) => {
         const term = searchTerm.toLowerCase();
         const matchesName = product.name.toLowerCase().includes(term);
@@ -93,6 +97,7 @@ export default function ProductsPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b">
+                                        <th className="p-4">Foto</th>
                                         <th className="p-4">ID</th>
                                         <th className="p-4">Cód. de Barras</th>
                                         <th className="p-4">Nome do Produto</th>
@@ -114,6 +119,20 @@ export default function ProductsPage() {
 
                                         return (
                                             <tr key={product.id} className="hover:bg-gray-50">
+                                                {/* Coluna da Imagem */}
+                                                <td className="p-4">
+                                                    <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                                                        {product.image_url ? (
+                                                            <img 
+                                                                src={`${API_URL}${product.image_url}`} 
+                                                                alt={product.name} 
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <ImageIcon size={18} className="text-gray-400" />
+                                                        )}
+                                                    </div>
+                                                </td>
                                                 <td className="p-4 font-mono text-gray-500">#{product.id}</td>
                                                 <td className="p-4 font-mono text-xs text-gray-600">
                                                     {product.barcode || <span className="text-slate-400 italic">Sem código</span>}
@@ -133,13 +152,17 @@ export default function ProductsPage() {
                                                         >
                                                             <SquarePen size={18} />
                                                         </button>
-                                                        <button 
-                                                            onClick={() => setDeletingProduct(product)}
-                                                            className="cursor-pointer text-red-600 hover:text-red-800 transition p-1"
-                                                            title="Excluir"
-                                                        >
-                                                            <Trash size={18} />
-                                                        </button>
+
+                                                        {/* Botão de Excluir visível apenas para admin */}
+                                                        {user?.role === 'admin' && (
+                                                            <button 
+                                                                onClick={() => setDeletingProduct(product)}
+                                                                className="cursor-pointer text-red-600 hover:text-red-800 transition p-1"
+                                                                title="Excluir"
+                                                            >
+                                                                <Trash size={18} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -163,11 +186,24 @@ export default function ProductsPage() {
                                         key={product.id} 
                                         className="bg-white p-4 rounded-2xl shadow-md border-2 border-slate-300 flex flex-col justify-between gap-3"
                                     >
-                                        <div className="flex justify-between items-start">
-                                            <div>
+                                        <div className="flex justify-between items-start gap-3">
+                                            {/* Imagem do Card Mobile */}
+                                            <div className="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 shrink-0 flex items-center justify-center">
+                                                {product.image_url ? (
+                                                    <img 
+                                                        src={`${API_URL}${product.image_url}`} 
+                                                        alt={product.name} 
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <ImageIcon size={20} className="text-gray-400" />
+                                                )}
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
                                                 <span className="text-xs font-mono text-slate-400">#{product.id}</span>
-                                                <h3 className="font-bold text-slate-900 text-base">{product.name}</h3>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <h3 className="font-bold text-slate-900 text-base truncate">{product.name}</h3>
+                                                <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                     <span className="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
                                                         {product.category || 'Geral'}
                                                     </span>
@@ -176,7 +212,7 @@ export default function ProductsPage() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right shrink-0">
                                                 <span className="text-sm font-bold text-blue-600">
                                                     R$ {Number(product.price).toFixed(2)}
                                                 </span>
@@ -196,13 +232,17 @@ export default function ProductsPage() {
                                                 >
                                                     <SquarePen size={16} />
                                                 </button>
-                                                <button 
-                                                    onClick={() => setDeletingProduct(product)}
-                                                    className="cursor-pointer p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition border border-red-200"
-                                                    title="Excluir"
-                                                >
-                                                    <Trash size={16} />
-                                                </button>
+
+                                                {/* Botão de Excluir visível apenas para admin */}
+                                                {user?.role === 'admin' && (
+                                                    <button 
+                                                        onClick={() => setDeletingProduct(product)}
+                                                        className="cursor-pointer p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition border border-red-200"
+                                                        title="Excluir"
+                                                    >
+                                                        <Trash size={16} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

@@ -36,11 +36,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Realiza a chamada ao backend
-      const { token, user } = await authService.login({ email, password });
+      // Realiza a chamada ao backend (recebe o token)
+      const { token } = await authService.login({ email, password });
       
-      // Salva no contexto de autenticação
-      login(token, user);
+      // Salva no contexto de autenticação passando apenas o token
+      await login(token);
 
       // Força um hard reload para a página inicial, garantindo zero resíduos de estado
       window.location.href = "/";
