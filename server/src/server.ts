@@ -11,16 +11,17 @@ import path from 'path';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3333;
+const PORT = Number(process.env.PORT) || 3333;
+const HOST = '0.0.0.0'; // Permite conexões externas na rede local
 
 app.use(cors());
 app.use(express.json());
 
 // Importa as rotas de autenticação e usuários
-app.use(authRoutes); // Adiciona as rotas de autenticação
-app.use(userRoutes); // Adiciona as rotas de usuários
-app.use(productRoutes); // Adiciona as rotas de produtos
-app.use(salesRoutes); // Adiciona as rotas de vendas
+app.use(authRoutes);
+app.use(userRoutes);
+app.use(productRoutes);
+app.use(salesRoutes);
 app.use('/api/pix', pixRoutes);
 
 app.get('/', (req, res) => {
@@ -30,6 +31,6 @@ app.get('/', (req, res) => {
 // Serve a pasta 'uploads' estaticamente na rota '/uploads'
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-app.listen(PORT, () => {
-  console.log(`🔥 Servidor executando na porta http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`🔥 Servidor executando na rede em http://${HOST}:${PORT} (ou http://192.168.2.107:${PORT})`);
 });

@@ -1,9 +1,8 @@
-"use client";
-
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { User } from "@/types/user";
 import { authService } from "@/services/authService";
+import { User } from "@/types/user";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextData {
   user: User | null;
@@ -22,47 +21,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega os dados salvos no localStorage ao iniciar a aplicação
+  // Carrega os dados salvos no AsyncStorage ao iniciar a aplicação mobile
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    async function loadStorageData() {
+      try {
+        const storedToken = await AsyncStorage.getItem("@OmniCaixa:token");
+        const storedUser = await AsyncStorage.getItem("@OmniCaixa:user");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados de autenticação:", error);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    setLoading(false);
+    loadStorageData();
   }, []);
 
   // Função chamada no login bem-sucedido
-  const login = (newToken: string, newUser: User) => {
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
+  const login = async (newToken: string, newUser: User) => {
+    try {
+      await AsyncStorage.setItem("@OmniCaixa:token", newToken);
+      await AsyncStorage.setItem("@OmniCaixa:user", JSON.stringify(newUser));
 
-    setToken(newToken);
-    setUser(newUser);
+      setToken(newToken);
+      setUser(newUser);
 
-    // Redireciona para a tela inicial do dashboard
-    router.push("/");
+      // Redireciona para o painel de PDV usando Expo Router
+      router.replace("/(dashboard)/pdv");
+    } catch (error) {
+      console.error("Erro ao salvar dados de login:", error);
+    }
   };
 
-  // Função para deslogar o usuário (integrada com o back-end)
+  // Função para deslogar o utilizador
   const logout = async () => {
     try {
-      // Opcional: Avisa o servidor para encerrar a sessão
       await authService.logout();
     } catch (error) {
       console.error("Erro ao terminar sessão no servidor:", error);
     } finally {
-      // Limpa os dados locais independentemente da resposta da API
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      // Limpa o armazenamento local do telemóvel
+      await AsyncStorage.removeItem("@OmniCaixa:token");
+      await AsyncStorage.removeItem("@OmniCaixa:user");
 
       setToken(null);
       setUser(null);
 
-      router.push("/login");
+      router.replace("/(auth)/login");
     }
   };
 
