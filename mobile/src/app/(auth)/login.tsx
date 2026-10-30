@@ -43,7 +43,7 @@ export default function LoginScreen() {
       const response = await authService.login({ email, password });
       
       // 2. Salva no contexto de autenticação global e armazena localmente
-      login(response.token, response.user);
+      login(response.token);
 
       // 3. Sucesso: redireciona para o painel de PDV
       router.replace('/(dashboard)/pdv');

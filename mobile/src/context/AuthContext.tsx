@@ -1,7 +1,9 @@
 import { authService } from "@/services/authService";
+import { tokenService } from "@/services/tokenService";
+import { userService } from "@/services/userService";
 import { User } from "@/types/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useRouter } from "expo-router"; // ou o teu router do react-navigation
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextData {
@@ -9,8 +11,8 @@ interface AuthContextData {
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+  login: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -21,58 +23,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega os dados salvos no AsyncStorage ao iniciar a aplicação mobile
+  // Carrega o token do AsyncStorage e valida/busca os dados reais do usuário ao iniciar
   useEffect(() => {
-    async function loadStorageData() {
+    async function initializeAuth() {
       try {
-        const storedToken = await AsyncStorage.getItem("@OmniCaixa:token");
-        const storedUser = await AsyncStorage.getItem("@OmniCaixa:user");
+        const storedToken = await AsyncStorage.getItem("token");
 
-        if (storedToken && storedUser) {
+        if (storedToken) {
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          
+          // Extrai o ID do usuário diretamente do token JWT
+          const userId = tokenService.getUserIdFromToken(storedToken);
+
+          if (userId) {
+            // Busca os dados atualizados e verdadeiros diretamente na base de dados
+            const freshUserData = await userService.getUserById(userId);
+            setUser(freshUserData);
+          } else {
+            throw new Error("ID inválido no token.");
+          }
         }
       } catch (error) {
-        console.error("Erro ao carregar dados de autenticação:", error);
+        console.error("Sessão inválida ou erro ao carregar usuário no mobile:", error);
+        // Se o token for inválido ou expirar, limpa tudo
+        await AsyncStorage.removeItem("token");
+        setToken(null);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     }
 
-    loadStorageData();
+    initializeAuth();
   }, []);
 
   // Função chamada no login bem-sucedido
-  const login = async (newToken: string, newUser: User) => {
+  const login = async (newToken: string) => {
     try {
-      await AsyncStorage.setItem("@OmniCaixa:token", newToken);
-      await AsyncStorage.setItem("@OmniCaixa:user", JSON.stringify(newUser));
-
+      await AsyncStorage.setItem("token", newToken);
       setToken(newToken);
-      setUser(newUser);
 
-      // Redireciona para o Painel Principal usando Expo Router
-      router.replace("/(dashboard)");
+      // Extrai o ID e busca os dados do usuário recém-logado
+      const userId = tokenService.getUserIdFromToken(newToken);
+      if (userId) {
+        const freshUserData = await userService.getUserById(userId);
+        setUser(freshUserData);
+      }
+
+      // Redireciona para a tela inicial do PDV/Dashboard
+      router.replace("/");
     } catch (error) {
-      console.error("Erro ao salvar dados de login:", error);
+      console.error("Erro ao processar login no mobile:", error);
     }
   };
 
-  // Função para deslogar o utilizador
+  // Função para deslogar o usuário
   const logout = async () => {
     try {
       await authService.logout();
     } catch (error) {
       console.error("Erro ao terminar sessão no servidor:", error);
     } finally {
-      // Limpa o armazenamento local do telemóvel
-      await AsyncStorage.removeItem("@OmniCaixa:token");
-      await AsyncStorage.removeItem("@OmniCaixa:user");
+      // Remove o token do armazenamento local do telemóvel
+      await AsyncStorage.removeItem("token");
 
       setToken(null);
       setUser(null);
 
-      router.replace("/(auth)/login");
+      // Redireciona para a tela de login
+      router.replace("/login");
     }
   };
 
@@ -92,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para facilitar o uso do contexto em outros componentes
+// Hook personalizado para facilitar o uso do contexto
 export function useAuth() {
   const context = useContext(AuthContext);
 
