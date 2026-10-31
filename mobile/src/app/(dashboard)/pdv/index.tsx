@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { productService } from "@/services/productService";
 import { saleService } from "@/services/saleService";
 import { CartItem, Product } from "@/types/product";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CreditCard, DollarSign, Minus, Plus, QrCode, Scale, Search, ShoppingCart, Trash2 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -30,30 +31,33 @@ export default function PDVPage() {
 
   // Validação do token JWT, verificação do utilizador e carregamento dos produtos
   useEffect(() => {
-    const token = localStorage.getItem('token');
+  async function checkAuthAndLoadProducts() {
+    try {
+      // 1. Obter o token do AsyncStorage de forma assíncrona
+      const token = await AsyncStorage.getItem('token');
 
-    if (!tokenService.isTokenValid(token)) {
-      localStorage.removeItem('token');
-      router.push('/login');
-      return;
-    }
+      // 2. Validar o token
+      if (!tokenService.isTokenValid(token)) {
+        await AsyncStorage.removeItem('token');
+        router.replace('/login');
+        return;
+      }
 
-    async function fetchProducts() {
-      try {
+      // 3. Carregar os produtos se o utilizador estiver autenticado
+      if (user) {
+        setLoading(true);
         const data = await productService.getAllProducts();
         setProducts(data);
-      } catch (error) {
-        console.error("Erro ao carregar produtos do banco:", error);
-      } finally {
-        setLoading(false);
       }
+    } catch (error) {
+      console.error("Erro ao carregar produtos ou verificar autenticação:", error);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    // Só executa o carregamento se o objeto 'user' já estiver disponível no contexto
-    if (user) {
-      fetchProducts();
-    }
-  }, [user, router]);
+  checkAuthAndLoadProducts();
+}, [user, router]);
 
   const addToCart = (product: Product) => {
     if (!product.id) return;

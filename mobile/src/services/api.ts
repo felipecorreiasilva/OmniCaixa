@@ -10,7 +10,7 @@ export const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('@OmniCaixa:token');
+      const token = await AsyncStorage.getItem('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -35,8 +35,7 @@ api.interceptors.response.use(
 
       try {
         // Limpa os dados da sessão local no telemóvel
-        await AsyncStorage.removeItem('@OmniCaixa:token');
-        await AsyncStorage.removeItem('@OmniCaixa:user');
+        await AsyncStorage.removeItem('token');
 
         // Redireciona o operador para o ecrã de login usando o Expo Router
         router.replace('/(auth)/login');

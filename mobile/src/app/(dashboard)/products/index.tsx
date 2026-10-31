@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { productService } from '@/services/productService';
 import { tokenService } from '@/services/tokenService';
 import { Product } from '@/types/product';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Image as ImageIcon, Search, SquarePen, Trash } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
@@ -32,19 +33,27 @@ export default function ProductsPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
-    // Validação do token JWT, verificação do utilizador e carregamento dos produtos
+    // Validação do token JWT via AsyncStorage, verificação do utilizador e carregamento dos produtos
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        async function checkAuthAndLoadProducts() {
+            try {
+                const token = await AsyncStorage.getItem('token');
 
-        if (!tokenService.isTokenValid(token)) {
-            localStorage.removeItem('token');
-            router.push('/login');
-            return;
+                if (!tokenService.isTokenValid(token)) {
+                    await AsyncStorage.removeItem('token');
+                    router.replace('/login');
+                    return;
+                }
+
+                if (user) {
+                    loadProducts();
+                }
+            } catch (error) {
+                console.error('Erro na autenticação ou carregamento de produtos:', error);
+            }
         }
 
-        if (user) {
-            loadProducts();
-        }
+        checkAuthAndLoadProducts();
     }, [user, router]);
 
     async function loadProducts() {

@@ -3,7 +3,7 @@ import { tokenService } from "@/services/tokenService";
 import { userService } from "@/services/userService";
 import { User } from "@/types/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router"; // ou o teu router do react-navigation
+import { useRouter } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextData {
@@ -23,29 +23,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega o token do AsyncStorage e valida/busca os dados reais do usuário ao iniciar
+  // Carrega o token do AsyncStorage e valida antes de buscar o usuário
   useEffect(() => {
     async function initializeAuth() {
       try {
         const storedToken = await AsyncStorage.getItem("token");
 
-        if (storedToken) {
+        // Valida o token antes de qualquer chamada à API para evitar 401
+        if (storedToken && tokenService.isTokenValid(storedToken)) {
           setToken(storedToken);
           
-          // Extrai o ID do usuário diretamente do token JWT
           const userId = tokenService.getUserIdFromToken(storedToken);
 
           if (userId) {
-            // Busca os dados atualizados e verdadeiros diretamente na base de dados
             const freshUserData = await userService.getUserById(userId);
             setUser(freshUserData);
           } else {
             throw new Error("ID inválido no token.");
           }
+        } else {
+          // Se não houver token ou se for inválido/expirado
+          await AsyncStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
         }
       } catch (error) {
-        console.error("Sessão inválida ou erro ao carregar usuário no mobile:", error);
-        // Se o token for inválido ou expirar, limpa tudo
+        console.error("Sessão inválida ou expirada no mobile:", error);
         await AsyncStorage.removeItem("token");
         setToken(null);
         setUser(null);
@@ -63,14 +66,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem("token", newToken);
       setToken(newToken);
 
-      // Extrai o ID e busca os dados do usuário recém-logado
       const userId = tokenService.getUserIdFromToken(newToken);
       if (userId) {
         const freshUserData = await userService.getUserById(userId);
         setUser(freshUserData);
       }
 
-      // Redireciona para a tela inicial do PDV/Dashboard
       router.replace("/");
     } catch (error) {
       console.error("Erro ao processar login no mobile:", error);
@@ -84,13 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro ao terminar sessão no servidor:", error);
     } finally {
-      // Remove o token do armazenamento local do telemóvel
       await AsyncStorage.removeItem("token");
-
       setToken(null);
       setUser(null);
-
-      // Redireciona para a tela de login
       router.replace("/login");
     }
   };
@@ -111,7 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para facilitar o uso do contexto
 export function useAuth() {
   const context = useContext(AuthContext);
 
