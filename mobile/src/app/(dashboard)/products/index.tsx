@@ -59,18 +59,18 @@ export default function ProductsPage() {
 
     return (
         <ProtectedRoute allowedRoles={['admin', 'manager']}>
-            <View className="flex-1 bg-gray-50 p-4">
+            <View className="flex-1 bg-zinc-950 p-4">
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
                     
                     {/* Cabeçalho e Botão de Novo Produto */}
                     <View className="flex-row justify-between items-center mb-4">
                         <View className="flex-1 pr-2">
-                            <Text className="text-xl font-bold text-gray-800">Produtos e Estoque</Text>
-                            <Text className="text-xs text-gray-500">Gerencie os itens disponíveis no PDV.</Text>
+                            <Text className="text-xl font-bold text-white">Produtos e Estoque</Text>
+                            <Text className="text-xs text-zinc-400">Gerencie os itens disponíveis no PDV.</Text>
                         </View>
                         <TouchableOpacity
                             onPress={() => setIsModalOpen(true)}
-                            className="bg-blue-600 px-4 py-2.5 rounded-xl flex-row items-center justify-center shadow-sm"
+                            className="bg-blue-600 px-4 py-2.5 rounded-xl flex-row items-center justify-center shadow-sm active:opacity-80"
                         >
                             <Text className="text-white font-semibold text-sm">+ Novo</Text>
                         </TouchableOpacity>
@@ -79,31 +79,31 @@ export default function ProductsPage() {
                     {/* Barra de Pesquisa */}
                     <View className="relative w-full mb-4">
                         <View className="absolute inset-y-0 left-0 pl-3 flex items-center justify-center z-10">
-                            <Search size={18} color="#9ca3af" />
+                            <Search size={18} color="#71717a" />
                         </View>
                         <TextInput
                             placeholder="Pesquisar por nome, código ou categoria..."
-                            placeholderTextColor="#9ca3af"
+                            placeholderTextColor="#71717a"
                             value={searchTerm}
                             onChangeText={setSearchTerm}
-                            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 shadow-sm"
+                            className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white shadow-sm"
                         />
                     </View>
 
                     {error ? (
-                        <View className="bg-red-100 p-3 rounded-xl mb-4">
-                            <Text className="text-red-700 text-sm text-center">{error}</Text>
+                        <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-4">
+                            <Text className="text-red-400 text-sm text-center">{error}</Text>
                         </View>
                     ) : null}
 
                     {loading ? (
                         <View className="py-20 items-center justify-center">
-                            <ActivityIndicator size="large" color="#2563eb" />
-                            <Text className="text-gray-500 text-sm mt-2">A carregar produtos...</Text>
+                            <ActivityIndicator size="large" color="#38bdf8" />
+                            <Text className="text-zinc-400 text-sm mt-2">A carregar produtos...</Text>
                         </View>
                     ) : filteredProducts.length === 0 ? (
-                        <View className="py-16 items-center justify-center bg-white rounded-2xl border border-gray-200 shadow-sm px-4">
-                            <Text className="text-gray-400 text-sm text-center">
+                        <View className="py-16 items-center justify-center bg-zinc-900 rounded-2xl border border-zinc-800 shadow-sm px-4">
+                            <Text className="text-zinc-500 text-sm text-center">
                                 Nenhum produto encontrado para "{searchTerm}".
                             </Text>
                         </View>
@@ -121,11 +121,11 @@ export default function ProductsPage() {
                                 return (
                                     <View 
                                         key={product.id} 
-                                        className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex-col justify-between gap-3"
+                                        className="bg-zinc-900 p-4 rounded-2xl shadow-sm border border-zinc-800 flex-col justify-between gap-3"
                                     >
                                         <View className="flex-row justify-between items-start gap-3">
                                             {/* Imagem do Produto */}
-                                            <View className="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 shrink-0 items-center justify-center">
+                                            <View className="w-14 h-14 bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 shrink-0 items-center justify-center">
                                                 {product.image_url ? (
                                                     <Image 
                                                         source={{ uri: `${API_URL}${product.image_url}` }} 
@@ -133,54 +133,54 @@ export default function ProductsPage() {
                                                         resizeMode="cover"
                                                     />
                                                 ) : (
-                                                    <ImageIcon size={20} color="#9ca3af" />
+                                                    <ImageIcon size={20} color="#71717a" />
                                                 )}
                                             </View>
 
                                             <View className="flex-1 min-w-0">
-                                                <Text className="text-xs font-mono text-gray-400">#{product.id}</Text>
-                                                <Text className="font-bold text-gray-900 text-base" numberOfLines={1}>
+                                                <Text className="text-xs font-mono text-zinc-500">#{product.id}</Text>
+                                                <Text className="font-bold text-white text-base" numberOfLines={1}>
                                                     {product.name}
                                                 </Text>
                                                 <View className="flex-row items-center gap-2 mt-1 flex-wrap">
-                                                    <View className="bg-gray-100 px-2 py-0.5 rounded-full">
-                                                        <Text className="text-gray-600 text-[11px]">
+                                                    <View className="bg-zinc-800 px-2 py-0.5 rounded-full">
+                                                        <Text className="text-zinc-300 text-[11px]">
                                                             {product.category || 'Geral'}
                                                         </Text>
                                                     </View>
-                                                    <Text className="text-xs font-mono text-gray-500" numberOfLines={1}>
+                                                    <Text className="text-xs font-mono text-zinc-400" numberOfLines={1}>
                                                         {product.barcode || 'Sem código'}
                                                     </Text>
                                                 </View>
                                             </View>
 
                                             <View className="items-end shrink-0">
-                                                <Text className="text-sm font-bold text-blue-600">
+                                                <Text className="text-sm font-bold text-cyan-400">
                                                     R$ {Number(product.price).toFixed(2)}
                                                 </Text>
                                             </View>
                                         </View>
 
-                                        <View className="flex-row justify-between items-center pt-3 border-t border-gray-100">
-                                            <Text className="text-gray-500 text-xs">
-                                                Estoque: <Text className="font-bold text-gray-900">{formattedStock} {isKg ? 'kg' : 'un.'}</Text>
+                                        <View className="flex-row justify-between items-center pt-3 border-t border-zinc-800/80">
+                                            <Text className="text-zinc-400 text-xs">
+                                                Estoque: <Text className="font-bold text-white">{formattedStock} {isKg ? 'kg' : 'un.'}</Text>
                                             </Text>
                                             
                                             <View className="flex-row items-center gap-2">
                                                 <TouchableOpacity 
                                                     onPress={() => setEditingProduct(product)}
-                                                    className="p-2 bg-blue-50 rounded-lg border border-blue-200"
+                                                    className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20 active:opacity-60"
                                                 >
-                                                    <SquarePen size={16} color="#2563eb" />
+                                                    <SquarePen size={16} color="#38bdf8" />
                                                 </TouchableOpacity>
 
                                                 {/* Botão de Excluir visível apenas para admin */}
                                                 {user?.role === 'admin' && (
                                                     <TouchableOpacity 
                                                         onPress={() => setDeletingProduct(product)}
-                                                        className="p-2 bg-red-50 rounded-lg border border-red-200"
+                                                        className="p-2 bg-red-500/10 rounded-lg border border-red-500/20 active:opacity-60"
                                                     >
-                                                        <Trash size={16} color="#dc2626" />
+                                                        <Trash size={16} color="#f87171" />
                                                     </TouchableOpacity>
                                                 )}
                                             </View>

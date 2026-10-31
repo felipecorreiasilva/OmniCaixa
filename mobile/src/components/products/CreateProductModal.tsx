@@ -1,7 +1,18 @@
-import { productService } from '@/services/productService'; // Ajusta o caminho conforme a estrutura do teu projeto mobile
+import { productService } from '@/services/productService';
 import * as ImagePicker from 'expo-image-picker';
+import { Image as ImageIcon, X } from 'lucide-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    Modal,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 interface CreateProductModalProps {
     isOpen: boolean;
@@ -14,6 +25,8 @@ interface ProductImage {
     name: string;
     type: string;
 }
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.107:3333";
 
 export default function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProductModalProps) {
     const [barcode, setBarcode] = useState('');
@@ -98,14 +111,25 @@ export default function CreateProductModal({ isOpen, onClose, onSuccess }: Creat
             transparent={true}
             onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black/50 items-center justify-center z-50 px-4">
-                <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90%]">
-                    <Text className="text-xl font-bold mb-4 text-gray-800">Cadastrar Novo Produto</Text>
+            <View className="flex-1 bg-black/70 items-center justify-center p-4">
+                <View className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl max-h-[90%]">
                     
-                    <ScrollView showsVerticalScrollIndicator={false} className="space-y-4">
+                    {/* Cabeçalho */}
+                    <View className="flex-row justify-between items-center px-5 py-4 bg-zinc-950 border-b border-zinc-800">
+                        <View className="flex-row items-center gap-2">
+                            <Text className="text-white font-bold text-base">Cadastrar Novo Produto</Text>
+                        </View>
+                        <TouchableOpacity onPress={onClose} className="p-1 bg-zinc-900 rounded-lg">
+                            <X size={18} color="#a1a1aa" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    {/* Corpo do Modal */}
+                    <ScrollView showsVerticalScrollIndicator={false} className="p-5">
+                        
                         {/* Campo de Código de Barras */}
-                        <View className="mb-3">
-                            <Text className="text-sm font-medium text-gray-700 mb-1">
+                        <View className="mb-3.5">
+                            <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
                                 Código de Barras (EAN-13 / Opcional)
                             </Text>
                             <TextInput
@@ -113,103 +137,119 @@ export default function CreateProductModal({ isOpen, onClose, onSuccess }: Creat
                                 onChangeText={setBarcode}
                                 maxLength={13}
                                 keyboardType="numeric"
-                                className="text-black w-full border border-gray-300 rounded-lg p-3 text-sm bg-gray-50 focus:border-blue-500"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium"
                                 placeholder="Passe o leitor ou digite o código..."
-                                placeholderTextColor="#9ca3af"
+                                placeholderTextColor="#52525b"
                             />
                         </View>
 
                         {/* Nome do Produto */}
-                        <View className="mb-3">
-                            <Text className="text-sm font-medium text-gray-700 mb-1">Nome do Produto *</Text>
+                        <View className="mb-3.5">
+                            <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                                Nome do Produto *
+                            </Text>
                             <TextInput
                                 value={name}
                                 onChangeText={setName}
-                                className="text-black w-full border border-gray-300 rounded-lg p-3 text-sm bg-gray-50 focus:border-blue-500"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium"
                                 placeholder="Ex: Coca-Cola 2L"
-                                placeholderTextColor="#9ca3af"
+                                placeholderTextColor="#52525b"
                             />
                         </View>
 
                         {/* Preço e Estoque */}
-                        <View className="flex-row gap-3 mb-3">
+                        <View className="flex-row gap-3 mb-3.5">
                             <View className="flex-1">
-                                <Text className="text-sm font-medium text-gray-700 mb-1">Preço (R$) *</Text>
+                                <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                                    Preço (R$) *
+                                </Text>
                                 <TextInput
                                     value={price}
                                     onChangeText={setPrice}
                                     keyboardType="numeric"
-                                    className="text-black w-full border border-gray-300 rounded-lg p-3 text-sm bg-gray-50 focus:border-blue-500"
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium"
                                     placeholder="0.00"
-                                    placeholderTextColor="#9ca3af"
+                                    placeholderTextColor="#52525b"
                                 />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-sm font-medium text-gray-700 mb-1">Estoque Inicial *</Text>
+                                <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                                    Estoque Inicial *
+                                </Text>
                                 <TextInput
                                     value={stock}
                                     onChangeText={setStock}
                                     keyboardType="numeric"
-                                    className="text-black w-full border border-gray-300 rounded-lg p-3 text-sm bg-gray-50 focus:border-blue-500"
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium"
                                     placeholder="10"
-                                    placeholderTextColor="#9ca3af"
+                                    placeholderTextColor="#52525b"
                                 />
                             </View>
                         </View>
 
                         {/* Categoria */}
-                        <View className="mb-3">
-                            <Text className="text-sm font-medium text-gray-700 mb-1">Categoria (Opcional)</Text>
+                        <View className="mb-3.5">
+                            <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                                Categoria (Opcional)
+                            </Text>
                             <TextInput
                                 value={category}
                                 onChangeText={setCategory}
-                                className="text-black w-full border border-gray-300 rounded-lg p-3 text-sm bg-gray-50 focus:border-blue-500"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium"
                                 placeholder="Ex: Bebidas, Limpeza"
-                                placeholderTextColor="#9ca3af"
+                                placeholderTextColor="#52525b"
                             />
                         </View>
 
                         {/* Seletor de Imagem */}
                         <View className="mb-4">
-                            <Text className="text-sm font-medium text-gray-700 mb-1">Imagem do Produto (Opcional)</Text>
+                            <Text className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                                Imagem do Produto (Opcional)
+                            </Text>
                             <TouchableOpacity
                                 onPress={pickImage}
-                                className="w-full py-2.5 px-4 rounded-lg bg-blue-50 border border-blue-200 items-center justify-center"
+                                className="w-full py-3 px-4 rounded-xl bg-zinc-950 border border-zinc-800 items-center justify-center flex-row gap-2 active:bg-zinc-800"
                             >
-                                <Text className="text-sm font-semibold text-blue-700">
+                                <ImageIcon size={16} color="#38bdf8" />
+                                <Text className="text-sm font-semibold text-cyan-400">
                                     {imageFile ? 'Alterar Imagem' : 'Selecionar Imagem da Galeria'}
                                 </Text>
                             </TouchableOpacity>
 
                             {imageFile && (
-                                <View className="mt-2 items-center">
-                                    <Image source={{ uri: imageFile.uri }} className="w-20 h-20 rounded-lg object-cover" />
+                                <View className="mt-3 items-center">
+                                    <View className="w-20 h-20 bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 items-center justify-center">
+                                        <Image source={{ uri: imageFile.uri }} className="w-full h-full" resizeMode="cover" />
+                                    </View>
                                 </View>
                             )}
                         </View>
 
-                        {/* Botões de Ação */}
-                        <View className="flex-row justify-end gap-2 mt-4">
-                            <TouchableOpacity
-                                onPress={onClose}
-                                disabled={loading}
-                                className="px-4 py-2.5 bg-gray-200 rounded-lg items-center justify-center"
-                            >
-                                <Text className="text-gray-700 font-medium text-sm">Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleSubmit}
-                                disabled={loading}
-                                className="px-4 py-2.5 bg-blue-600 rounded-lg items-center justify-center flex-row min-w-[120px]"
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#ffffff" />
-                                ) : (
-                                    <Text className="text-white font-medium text-sm">Salvar Produto</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
                     </ScrollView>
+
+                    {/* Rodapé / Ações */}
+                    <View className="p-4 bg-zinc-950 border-t border-zinc-800 flex-row gap-2">
+                        <TouchableOpacity
+                            onPress={onClose}
+                            disabled={loading}
+                            className="flex-1 py-3 bg-zinc-900 border border-zinc-800 rounded-xl items-center"
+                        >
+                            <Text className="text-zinc-300 font-semibold text-xs">Cancelar</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={handleSubmit}
+                            disabled={loading}
+                            className="flex-1 py-3 bg-blue-600 rounded-xl items-center flex-row justify-center gap-1.5 opacity-90 active:opacity-100 disabled:opacity-30"
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#ffffff" />
+                            ) : (
+                                <Text className="text-white font-semibold text-xs">Salvar Produto</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
             </View>
         </Modal>
