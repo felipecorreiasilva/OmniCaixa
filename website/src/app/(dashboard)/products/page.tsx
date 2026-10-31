@@ -9,10 +9,13 @@ import EditProductModal from '@/components/products/EditProductModal';
 import DeleteProductModal from '@/components/products/DeleteProductModal';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { tokenService } from '@/services/tokenService';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.107:3333";
 
 export default function ProductsPage() {
+    const router = useRouter();
     const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -22,9 +25,21 @@ export default function ProductsPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
+    // Validação do token e carregamento condicionado ao utilizador
     useEffect(() => {
-        loadProducts();
-    }, []);
+        const token = localStorage.getItem('token');
+
+        if (!tokenService.isTokenValid(token)) {
+            localStorage.removeItem('token');
+            router.push('/login');
+            return;
+        }
+
+        // Só executa o loadProducts se o objeto 'user' já estiver carregado no contexto
+        if (user) {
+            loadProducts();
+        }
+    }, [user, router]);
 
     async function loadProducts() {
         try {

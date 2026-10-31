@@ -11,11 +11,14 @@ import PaymentMoneyModal from "@/components/pdv/PaymentMoneyModal";
 import PaymentCardModal from "@/components/pdv/PaymentCardModal"; // Modal para Cartão de Crédito/Débito (Maquininha)
 import PaymentPixModal from "@/components/pdv/PaymentPixModal";       // Modal exclusivo para Pix da Efí
 import { saleService } from "@/services/saleService";
+import { tokenService } from "@/services/tokenService";
+import { useRouter } from "next/navigation";
 
 // Define a URL base da API a partir da variável de ambiente
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 export default function PDVPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,8 +30,16 @@ export default function PDVPage() {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
-  // Carrega os produtos reais do banco de dados ao abrir a página
+  // Validação do token e carregamento condicionado ao utilizador
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!tokenService.isTokenValid(token)) {
+      localStorage.removeItem('token');
+      router.push('/login');
+      return;
+    }
+
     async function fetchProducts() {
       try {
         const data = await productService.getAllProducts();
@@ -40,8 +51,11 @@ export default function PDVPage() {
       }
     }
 
-    fetchProducts();
-  }, []);
+    // Só executa o carregamento se o objeto 'user' já estiver carregado no contexto
+    if (user) {
+      fetchProducts();
+    }
+  }, [user, router]);
 
   const addToCart = (product: Product) => {
     if (!product.id) return;

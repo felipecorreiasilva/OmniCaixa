@@ -4,42 +4,21 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { ShoppingCart, Package, Users, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { tokenService } from '@/services/tokenService';
 
 export default function DashboardHomePage() {
   const { user } = useAuth();
-
+  const router = useRouter();
+  
     useEffect(() => {
         const token = localStorage.getItem('token');
 
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
-
-        try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(
-                atob(base64)
-                    .split('')
-                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                    .join('')
-            );
-
-            const { exp } = JSON.parse(jsonPayload);
-            const currentTime = Date.now() / 1000;
-
-            if (exp && currentTime > exp) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-            }
-        } catch (err) {
+        if (!tokenService.isTokenValid(token)) {
             localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
+            router.push('/login');
         }
-    }, []);
+    }, [router]);
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-zinc-950 min-h-screen text-zinc-100">

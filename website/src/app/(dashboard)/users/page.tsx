@@ -9,10 +9,13 @@ import CreateUserModal from "@/components/users/CreateUserModal";
 import EditUserModal from "@/components/users/EditUserModal";
 import DeleteUserModal from "@/components/users/DeleteUserModal";
 import { useAuth } from "@/context/AuthContext";
+import { tokenService } from "@/services/tokenService";
+import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 export default function UsersPage() {
+    const router = useRouter();
     const [users, setUsers] = useState<User[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [searchTerm, setSearchTerm] = useState(""); // Estado para a pesquisa
@@ -21,12 +24,20 @@ export default function UsersPage() {
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
     const { user } = useAuth();
 
-    // Carregar utilizadores da API ao montar o componente
+    // Carregar utilizadores da API ao montar o componente com validação de token
     useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        if (!tokenService.isTokenValid(token)) {
+            localStorage.removeItem('token');
+            router.push('/login');
+            return;
+        }
+
         if (user && (user.role === 'admin' || user.role === 'manager')) {
             loadUsers();
         }
-    }, [user]);
+    }, [user, router]);
 
     async function loadUsers() {
         try {
