@@ -2,7 +2,7 @@
 
 import { userService } from "@/services/userService";
 import { useState } from "react";
-import { X, UserPlus, Lock, Mail, User as UserIcon, Shield, Image as ImageIcon } from "lucide-react";
+import { X, UserPlus, Lock, Mail, User as UserIcon, Shield, Image as ImageIcon, CheckCircle } from "lucide-react";
 
 interface CreateUserModalProps {
     isOpen: boolean;
@@ -54,38 +54,39 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-xl w-full mx-auto max-w-md overflow-hidden border border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className="bg-zinc-900 w-full max-w-md mx-auto rounded-3xl shadow-2xl border border-zinc-800 overflow-hidden my-auto animate-in fade-in zoom-in duration-200">
                 
                 {/* Cabeçalho do Modal */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                    <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
-                        <UserPlus className="w-5 h-5 text-cyan-600" />
+                <div className="flex items-center justify-between px-6 py-4 bg-zinc-950 border-b border-zinc-800">
+                    <div className="flex items-center gap-2 text-cyan-400 font-bold text-base">
+                        <UserPlus size={20} />
                         <h2>Novo Funcionário</h2>
                     </div>
                     <button 
+                        type="button"
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition"
+                        className="text-zinc-400 hover:text-white p-1.5 bg-zinc-900 rounded-lg transition cursor-pointer"
                     >
-                        <X size={20} />
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Formulário */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                     {error && (
-                        <div className="bg-red-50 text-red-600 text-xs p-3 rounded-xl border border-red-100">
+                        <div className="bg-red-500/10 text-red-400 text-xs p-3 rounded-2xl border border-red-500/20">
                             {error}
                         </div>
                     )}
 
                     {/* Nome */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                            Nome Completo
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Nome Completo *
                         </label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-zinc-500 z-10">
                                 <UserIcon size={16} />
                             </span>
                             <input 
@@ -94,18 +95,18 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                                 placeholder="Ex: João Silva"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition"
+                                className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm"
                             />
                         </div>
                     </div>
 
                     {/* Email */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                            Email Profissional
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Email Profissional *
                         </label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-zinc-500 z-10">
                                 <Mail size={16} />
                             </span>
                             <input 
@@ -114,18 +115,18 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                                 placeholder="exemplo@omnicaixa.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition"
+                                className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm"
                             />
                         </div>
                     </div>
 
                     {/* Palavra-passe */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                            Palavra-passe Inicial
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Palavra-passe Inicial *
                         </label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-zinc-500 z-10">
                                 <Lock size={16} />
                             </span>
                             <input 
@@ -134,40 +135,40 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                                 placeholder="Mínimo 6 caracteres"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition"
+                                className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm"
                             />
                         </div>
                     </div>
 
                     {/* Cargo / Role */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                            Cargo (Permissão)
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Cargo (Permissão) *
                         </label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-zinc-500 z-10">
                                 <Shield size={16} />
                             </span>
                             <select 
                                 value={role}
                                 onChange={(e) => setRole(e.target.value as any)}
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition text-gray-700"
+                                className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm appearance-none cursor-pointer"
                             >
-                                <option value="cashier">Caixa (Cashier)</option>
-                                <option value="manager">Gerente (Manager)</option>
-                                <option value="admin">Administrador (Admin)</option>
+                                <option value="cashier" className="bg-zinc-900 text-white">Caixa (Cashier)</option>
+                                <option value="manager" className="bg-zinc-900 text-white">Gerente (Manager)</option>
+                                <option value="admin" className="bg-zinc-900 text-white">Administrador (Admin)</option>
                             </select>
                         </div>
                     </div>
 
                     {/* Upload da Foto de Perfil */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                             Foto de Perfil (Opcional)
                         </label>
                         <div className="flex items-center gap-2">
-                            <label className="w-full flex items-center gap-2 px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition text-gray-500">
-                                <ImageIcon size={16} className="text-gray-400 shrink-0" />
+                            <label className="w-full py-3 px-4 bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xs font-semibold text-zinc-300 transition flex items-center gap-2.5 cursor-pointer truncate">
+                                <ImageIcon size={16} className="text-cyan-400 shrink-0" />
                                 <span className="truncate">
                                     {file ? file.name : "Escolher imagem..."}
                                 </span>
@@ -186,7 +187,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                                 <button
                                     type="button"
                                     onClick={() => setFile(null)}
-                                    className="text-xs text-red-500 hover:underline px-2 py-1 shrink-0"
+                                    className="text-xs text-red-400 hover:text-red-300 px-2.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl shrink-0 transition cursor-pointer"
                                 >
                                     Remover
                                 </button>
@@ -195,19 +196,20 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                     </div>
 
                     {/* Botões de Ação */}
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div className="pt-2 flex gap-2">
                         <button 
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition"
+                            className="flex-1 py-3 text-xs font-semibold text-zinc-300 bg-zinc-950 hover:bg-zinc-800 rounded-xl transition cursor-pointer border border-zinc-800 text-center"
                         >
                             Cancelar
                         </button>
                         <button 
                             type="submit"
                             disabled={loading}
-                            className="px-5 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition shadow-sm disabled:opacity-50 flex items-center gap-2"
+                            className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm cursor-pointer"
                         >
+                            <CheckCircle size={16} />
                             {loading ? 'A criar...' : 'Criar Utilizador'}
                         </button>
                     </div>

@@ -85,21 +85,21 @@ export default function PaymentPixModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="bg-zinc-900 w-full max-w-md rounded-3xl shadow-2xl border border-zinc-800 overflow-hidden animate-in fade-in zoom-in duration-200">
         
         {/* Cabeçalho */}
-        <div className="flex justify-between items-center px-6 py-4 bg-slate-50 border-b border-slate-200">
-          <div className="flex items-center gap-2 text-cyan-600 font-bold text-lg">
-            <QrCode size={22} />
+        <div className="flex justify-between items-center px-6 py-4 bg-zinc-950 border-b border-zinc-800">
+          <div className="flex items-center gap-2 text-cyan-400 font-bold text-base">
+            <QrCode size={20} />
             <span>Pagamento via Pix</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-200/50 transition cursor-pointer"
+            className="text-zinc-400 hover:text-white p-1.5 bg-zinc-900 rounded-lg transition cursor-pointer"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -107,25 +107,25 @@ export default function PaymentPixModal({
         <div className="p-6 space-y-4">
           
           {/* Valor da Compra */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
-            <span className="text-sm font-medium text-slate-600">Total a Pagar:</span>
-            <span className="text-2xl font-extrabold text-cyan-600">
+          <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center">
+            <span className="text-xs font-medium text-zinc-400">Total a Pagar:</span>
+            <span className="text-xl font-extrabold text-cyan-400">
               R$ {totalAmount.toFixed(2)}
             </span>
           </div>
 
           {/* Área do QR Code Dinâmico */}
           <div className="flex flex-col items-center justify-center py-1 space-y-3">
-            <div className="w-48 h-48 bg-white border border-cyan-300 rounded-2xl flex flex-col items-center justify-center p-2 shadow-sm">
+            <div className="w-48 h-48 bg-white border border-zinc-700 rounded-2xl flex flex-col items-center justify-center p-2 shadow-sm">
               {loadingPix ? (
-                <div className="flex flex-col items-center text-slate-400 space-y-2">
+                <div className="flex flex-col items-center text-zinc-500 space-y-2">
                   <Loader2 className="w-8 h-8 animate-spin text-cyan-600" />
-                  <span className="text-[10px]">A gerar Pix...</span>
+                  <span className="text-[10px] font-medium">A gerar Pix...</span>
                 </div>
               ) : qrCodeBase64 ? (
                 <img src={qrCodeBase64} alt="QR Code Pix" className="w-full h-full object-contain" />
               ) : (
-                <span className="text-xs text-red-500 text-center">Erro ao carregar QR Code</span>
+                <span className="text-xs text-red-500 text-center font-medium">Erro ao carregar QR Code</span>
               )}
             </div>
 
@@ -134,15 +134,15 @@ export default function PaymentPixModal({
               <button
                 type="button"
                 onClick={handleCopyCode}
-                className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer border border-slate-200"
+                className="w-full py-3 px-4 bg-zinc-950 hover:bg-zinc-800 text-zinc-200 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer border border-zinc-800"
               >
-                {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-cyan-400" />}
                 {copied ? "Código Pix Copiado!" : "Copiar Código Pix (Copia e Cola)"}
               </button>
             )}
 
-            <p className="text-xs text-slate-500 text-center flex items-center gap-1 pt-1">
-              <Smartphone size={14} className="text-cyan-600" />
+            <p className="text-xs text-zinc-400 text-center flex items-center gap-1.5 pt-1">
+              <Smartphone size={14} className="text-cyan-400" />
               Aguardando pagamento via Pix...
             </p>
           </div>
@@ -150,11 +150,11 @@ export default function PaymentPixModal({
         </div>
 
         {/* Rodapé / Ações */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <div className="p-4 bg-zinc-950 border-t border-zinc-800 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200/60 rounded-xl transition cursor-pointer border border-slate-200"
+            className="w-full py-3 text-xs font-semibold text-zinc-300 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition cursor-pointer border border-zinc-800 text-center"
           >
             Cancelar / Fechar
           </button>

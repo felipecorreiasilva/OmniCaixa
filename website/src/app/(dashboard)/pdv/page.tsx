@@ -173,7 +173,7 @@ export default function PDVPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-slate-50 overflow-hidden text-slate-800">
+    <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-zinc-950 overflow-hidden text-zinc-100">
       
       {/* Lado Esquerdo: Catálogo de Produtos e Busca */}
       <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto">
@@ -181,13 +181,13 @@ export default function PDVPage() {
         {/* Cabeçalho da Área de Produtos */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Frente de Caixa (PDV)</h1>
-            <p className="text-sm text-slate-500">Operador: <span className="font-semibold text-cyan-600">{user?.name || "Funcionário"}</span></p>
+            <h1 className="text-2xl font-bold text-white">Frente de Caixa (PDV)</h1>
+            <p className="text-sm text-zinc-400">Operador: <span className="font-semibold text-cyan-400">{user?.name || "Funcionário"}</span></p>
           </div>
 
           {/* Barra de Pesquisa / Leitor de Código de Barras */}
           <div className="relative w-full sm:w-72">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
               <Search size={18} />
             </span>
             <input
@@ -196,7 +196,7 @@ export default function PDVPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm transition"
+              className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm transition"
             />
           </div>
         </div>
@@ -204,10 +204,10 @@ export default function PDVPage() {
         {/* Grelha de Produtos Dinâmica */}
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 space-y-2">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 space-y-2">
             <p className="text-sm">Nenhum produto encontrado no banco de dados.</p>
           </div>
         ) : (
@@ -224,10 +224,10 @@ export default function PDVPage() {
                 <div
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  className="bg-white p-4 rounded-2xl border border-slate-400 hover:border-cyan-300 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between group"
+                  className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 hover:border-cyan-500/50 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center p-1">
+                    <div className="w-16 h-16 bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 shrink-0 flex items-center justify-center p-1">
                       {product.image_url ? (
                         <img 
                           src={`${API_URL}${product.image_url}`} 
@@ -235,37 +235,37 @@ export default function PDVPage() {
                           className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                         />
                       ) : (
-                        <span className="text-[10px] text-slate-400">Sem foto</span>
+                        <span className="text-[10px] text-zinc-500">Sem foto</span>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
-                        <h3 className="font-semibold text-slate-900 group-hover:text-cyan-600 transition truncate text-sm">{product.name}</h3>
+                        <h3 className="font-semibold text-white group-hover:text-cyan-400 transition truncate text-sm">{product.name}</h3>
                         {isKg && (
                           <span title="Produto a granel (Peso)">
-                            <Scale size={14} className="text-cyan-600 shrink-0" />
+                            <Scale size={14} className="text-cyan-400 shrink-0" />
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-zinc-400 mt-0.5">
                         Estoque: {formattedStock} {isKg ? 'kg' : 'un.'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-2 border-t border-slate-100 space-y-2">
+                  <div className="mt-4 pt-2 border-t border-zinc-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400 font-mono">
+                      <span className="text-xs text-zinc-500 font-mono">
                         {product.barcode || "Sem código de barras"}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-bold text-cyan-600">
-                        R$ {Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">{isKg ? '/kg' : ''}</span>
+                      <span className="text-base font-bold text-cyan-400">
+                        R$ {Number(product.price).toFixed(2)} <span className="text-xs font-normal text-zinc-500">{isKg ? '/kg' : ''}</span>
                       </span>
-                      <span className="p-1.5 bg-cyan-50 text-cyan-600 border border-cyan-100 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition">
+                      <span className="p-1.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg text-xs font-medium flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-zinc-950 transition">
                         <Plus size={14} /> Adicionar
                       </span>
                     </div>
@@ -278,15 +278,15 @@ export default function PDVPage() {
       </div>
 
       {/* Lado Direito: Carrinho e Resumo do Pagamento */}
-      <div className="w-full md:w-96 bg-white border-l border-slate-200 flex flex-col justify-between shadow-sm">
+      <div className="w-full md:w-96 bg-zinc-900 border-l border-zinc-800 flex flex-col justify-between shadow-sm">
         
         {/* Título do Carrinho */}
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
-          <div className="flex items-center gap-2 text-slate-800 font-bold">
-            <ShoppingCart size={20} className="text-cyan-600" />
+        <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+          <div className="flex items-center gap-2 text-white font-bold">
+            <ShoppingCart size={20} className="text-cyan-400" />
             <span>Carrinho Atual</span>
           </div>
-          <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 text-xs px-2.5 py-1 rounded-full font-semibold">
+          <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs px-2.5 py-1 rounded-full font-semibold">
             {cart.reduce((acc, item) => acc + (item.name.toLowerCase().includes('kg') ? 1 : item.quantity), 0)} itens
           </span>
         </div>
@@ -294,8 +294,8 @@ export default function PDVPage() {
         {/* Lista de Itens no Carrinho */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center space-y-2">
-              <ShoppingCart size={40} className="stroke-1 text-slate-300" />
+            <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-center space-y-2">
+              <ShoppingCart size={40} className="stroke-1 text-zinc-700" />
               <p className="text-sm">O carrinho está vazio.<br/>Selecione os produtos ao lado.</p>
             </div>
           ) : (
@@ -305,23 +305,23 @@ export default function PDVPage() {
               const pesoEmGramas = isKg ? Math.round((item.quantity || 0) * 1000) : null;
 
               return (
-                <div key={item.id} className="flex flex-col bg-slate-50 p-3 rounded-xl border border-slate-200 gap-2">
+                <div key={item.id} className="flex flex-col bg-zinc-950 p-3 rounded-xl border border-zinc-800 gap-2">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-slate-800 truncate">{item.name}</h4>
-                      <p className="text-xs text-cyan-600 font-medium">
+                      <h4 className="text-sm font-semibold text-white truncate">{item.name}</h4>
+                      <p className="text-xs text-cyan-400 font-medium">
                         R$ {Number(item.price).toFixed(2)} {isKg ? '/kg' : ''}
                       </p>
                     </div>
 
                     {/* Subtotal e Exclusão */}
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-white">
                         R$ {(item.price * (item.quantity || 0)).toFixed(2)}
                       </span>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-red-500 hover:text-red-600 p-1 bg-red-50 rounded-lg border border-red-100 transition"
+                        className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-lg border border-red-500/20 transition"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -329,15 +329,15 @@ export default function PDVPage() {
                   </div>
 
                   {/* Linha Inferior: Controladores de Quantidade e Leitura em Gramas */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                    <span className="text-[11px] font-semibold text-slate-500">
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                    <span className="text-[11px] font-semibold text-zinc-400">
                       {isKg ? `(${pesoEmGramas}g)` : 'Quantidade:'}
                     </span>
 
-                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-1">
                       <button
                         onClick={() => updateQuantity(item.id, -1)}
-                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded transition"
+                        className="w-6 h-6 flex items-center justify-center text-zinc-400 hover:bg-zinc-800 rounded transition"
                         title={isKg ? "Diminuir peso" : "Diminuir 1"}
                       >
                         <Minus size={12} />
@@ -348,12 +348,12 @@ export default function PDVPage() {
                         type="text"
                         value={item.quantityStr ?? item.quantity}
                         onChange={(e) => handleDirectInputChange(item.id, e.target.value)}
-                        className="w-16 text-xs font-bold text-slate-800 text-center bg-transparent focus:outline-none focus:ring-1 focus:ring-cyan-500 rounded"
+                        className="w-16 text-xs font-bold text-white text-center bg-transparent focus:outline-none focus:ring-1 focus:ring-cyan-500 rounded"
                       />
 
                       <button
                         onClick={() => updateQuantity(item.id, 1)}
-                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded transition"
+                        className="w-6 h-6 flex items-center justify-center text-zinc-400 hover:bg-zinc-800 rounded transition"
                         title={isKg ? "Aumentar peso" : "Aumentar 1"}
                       >
                         <Plus size={12} />
@@ -367,10 +367,10 @@ export default function PDVPage() {
         </div>
 
         {/* Rodapé do Carrinho e Botões de Pagamento (3 Botões Separados) */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50/50 space-y-4">
-          <div className="flex justify-between items-center text-lg font-bold text-slate-900">
+        <div className="p-4 border-t border-zinc-800 bg-zinc-950 space-y-4">
+          <div className="flex justify-between items-center text-lg font-bold text-white">
             <span>Total a Pagar:</span>
-            <span className="text-cyan-600">R$ {totalCart.toFixed(2)}</span>
+            <span className="text-cyan-400">R$ {totalCart.toFixed(2)}</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2">

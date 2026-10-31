@@ -1,6 +1,9 @@
+'use client';
+
 import { productService } from "@/services/productService";
 import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
+import { X, CheckCircle, Upload, Edit3 } from "lucide-react";
 
 interface EditProductModalProps {
     isOpen: boolean;
@@ -56,93 +59,138 @@ export default function EditProductModal({isOpen, onClose, onSuccess, product}: 
     }
 
     return (
-        /* Adicionado px-4 para garantir respiro nas laterais da tela em mobile */
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4 backdrop-blur-md">
-            {/* Adicionado w-full e mx-auto para respeitar a largura máxima com margens automáticas */}
-            <div className="bg-white rounded-xl p-6 w-full max-w-md mx-auto shadow-2xl">
-                <h2 className="text-xl font-bold mb-4 text-gray-800">Editar Produto #{product.id}</h2>
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4 backdrop-blur-sm overflow-y-auto">
+            <div className="bg-zinc-900 w-full max-w-md mx-auto rounded-3xl shadow-2xl border border-zinc-800 overflow-hidden my-auto animate-in fade-in zoom-in duration-200">
                 
-                <form className="space-y-4">
-                    <div>
-                        <label className="block text-sm text-gray-700 mb-1">Nome do Produto</label>
+                {/* Cabeçalho */}
+                <div className="flex justify-between items-center px-6 py-4 bg-zinc-950 border-b border-zinc-800">
+                    <div className="flex items-center gap-2 text-cyan-400 font-bold text-base">
+                        <Edit3 size={18} />
+                        <span>Editar Produto #{product.id}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="text-zinc-400 hover:text-white p-1.5 bg-zinc-900 rounded-lg transition cursor-pointer"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+                
+                {/* Formulário */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                    
+                    {/* Nome do Produto */}
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Nome do Produto *
+                        </label>
                         <input 
                             type="text"
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full border rounded-lg p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 outline-none" 
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm" 
+                            placeholder="Ex: Coca-Cola 2L"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Preço */}
+                        <div className="space-y-1.5">
+                            <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                                Preço (R$) *
+                            </label>
                             <input 
                                 type="number"
                                 step='0.01'
                                 required
                                 value={price}
                                 onChange={(e) => {setPrice(e.target.value)}}
-                                className="w-full border rounded-lg p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 outline-none" 
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm" 
+                                placeholder="0.00"
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Atual</label>
+                        {/* Estoque Atual */}
+                        <div className="space-y-1.5">
+                            <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                                Estoque Atual *
+                            </label>
                             <input 
                                 type="number"
                                 step='0.01'
                                 required
                                 value={stock}
                                 onChange={(e) => {setStock(e.target.value)}} 
-                                className="w-full border rounded-lg p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm"
+                                placeholder="10"
                             />
                         </div>
+                    </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Categoria (Opcional)</label>
-                            <input 
-                                type="text"
-                                value={category}
-                                onChange={(e) => {setCategory(e.target.value)}}
-                                className="w-full border rounded-lg p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                        </div>
+                    {/* Categoria */}
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Categoria (Opcional)
+                        </label>
+                        <input 
+                            type="text"
+                            value={category}
+                            onChange={(e) => {setCategory(e.target.value)}}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-sm"
+                            placeholder="Ex: Bebidas, Limpeza"
+                        />
+                    </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nova Imagem (Opcional)</label>
+                    {/* Nova Imagem */}
+                    <div className="space-y-1.5">
+                        <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            Nova Imagem (Opcional)
+                        </label>
+                        <div className="relative">
                             <input 
                                 type="file" 
                                 accept="image/*"
+                                id="edit-product-image-file"
                                 onChange={(e) => {
                                     if (e.target.files && e.target.files[0]){
                                         setImageFile(e.target.files[0]);
                                     }
                                 }}
-                                className="w-full text-sm text-gray-500 file:mr-4 file:py-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                className="hidden"
                             />
+                            <label 
+                                htmlFor="edit-product-image-file"
+                                className="w-full py-3 px-4 bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xs font-semibold text-zinc-300 transition flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Upload size={16} className="text-cyan-400" />
+                                {imageFile ? imageFile.name : 'Selecionar Nova Imagem'}
+                            </label>
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4 pt-2">
+                    {/* Rodapé / Ações */}
+                    <div className="pt-2 flex gap-2">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition font-medium cursor-pointer"
+                            className="flex-1 py-3 text-xs font-semibold text-zinc-300 bg-zinc-950 hover:bg-zinc-800 rounded-xl transition cursor-pointer border border-zinc-800 text-center"
                         >
                             Cancelar
                         </button>
 
                         <button
-                            type="button"
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={loading}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
+                            className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm cursor-pointer"
                         >
+                            <CheckCircle size={16} />
                             {loading ? 'A atualizar...' : 'Salvar Alterações'}
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>
