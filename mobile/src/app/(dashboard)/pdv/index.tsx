@@ -10,10 +10,13 @@ import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Scroll
 import PaymentCardModal from "@/components/pdv/PaymentCardModal";
 import PaymentMoneyModal from "@/components/pdv/PaymentMoneyModal";
 import PaymentPixModal from "@/components/pdv/PaymentPixModal";
+import { tokenService } from "@/services/tokenService";
+import { useRouter } from "expo-router";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.107:3333";
 
 export default function PDVPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,7 +28,16 @@ export default function PDVPage() {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
+  // Validação do token JWT, verificação do utilizador e carregamento dos produtos
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!tokenService.isTokenValid(token)) {
+      localStorage.removeItem('token');
+      router.push('/login');
+      return;
+    }
+
     async function fetchProducts() {
       try {
         const data = await productService.getAllProducts();
@@ -37,8 +49,11 @@ export default function PDVPage() {
       }
     }
 
-    fetchProducts();
-  }, []);
+    // Só executa o carregamento se o objeto 'user' já estiver disponível no contexto
+    if (user) {
+      fetchProducts();
+    }
+  }, [user, router]);
 
   const addToCart = (product: Product) => {
     if (!product.id) return;

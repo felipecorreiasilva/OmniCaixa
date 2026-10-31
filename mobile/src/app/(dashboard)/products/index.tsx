@@ -4,7 +4,9 @@ import EditProductModal from '@/components/products/EditProductModal';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { productService } from '@/services/productService';
+import { tokenService } from '@/services/tokenService';
 import { Product } from '@/types/product';
+import { useRouter } from 'expo-router';
 import { Image as ImageIcon, Search, SquarePen, Trash } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
@@ -20,6 +22,7 @@ import {
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.107:3333";
 
 export default function ProductsPage() {
+    const router = useRouter();        
     const { user } = useAuth(); // Obtém o utilizador logado para verificar o cargo (role)
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,10 +32,20 @@ export default function ProductsPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
-    // Carregar produtos ao abrir a página
+    // Validação do token JWT, verificação do utilizador e carregamento dos produtos
     useEffect(() => {
-        loadProducts();
-    }, []);
+        const token = localStorage.getItem('token');
+
+        if (!tokenService.isTokenValid(token)) {
+            localStorage.removeItem('token');
+            router.push('/login');
+            return;
+        }
+
+        if (user) {
+            loadProducts();
+        }
+    }, [user, router]);
 
     async function loadProducts() {
         try {

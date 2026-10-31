@@ -7,7 +7,6 @@ export interface DecodedUser {
 }
 
 export const tokenService = {
-  // Decodifica e retorna todo o payload guardado no token JWT
   decodeToken(token: string): DecodedUser | null {
     try {
       const base64Url = token.split('.')[1];
@@ -18,15 +17,28 @@ export const tokenService = {
           .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       );
-
       return JSON.parse(jsonPayload) as DecodedUser;
     } catch (err) {
-      console.error("Erro ao decodificar o token JWT no mobile:", err);
+      console.error("Erro ao decodificar o token JWT:", err);
       return null;
     }
   },
 
-  // Atalho para extrair apenas o ID do usuário
+  // Método para verificar se o token é válido e não expirou
+  isTokenValid(token: string | null): boolean {
+    if (!token) return false;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return false;
+
+    const currentTime = Date.now() / 1000;
+    if (currentTime > decoded.exp) {
+      return false; // Expirou
+    }
+
+    return true;
+  },
+
   getUserIdFromToken(token: string): number | null {
     const decoded = this.decodeToken(token);
     return decoded ? decoded.id : null;
