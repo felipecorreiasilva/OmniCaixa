@@ -2,13 +2,15 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useState, useEffect } from "react";
-import { Users as UsersIcon, Shield, UserPlus, Mail, Trash2, Edit, Search } from "lucide-react";
+import { Users as UsersIcon, Shield, UserPlus, Mail, Trash2, Edit, Search, CircleUserRound } from "lucide-react";
 import { userService } from "@/services/userService";
 import { User } from "@/types/user";
 import CreateUserModal from "@/components/users/CreateUserModal";
 import EditUserModal from "@/components/users/EditUserModal";
 import DeleteUserModal from "@/components/users/DeleteUserModal";
 import { useAuth } from "@/context/AuthContext";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -104,6 +106,7 @@ export default function UsersPage() {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className="py-4 px-6">Foto</th>
                                             <th className="py-4 px-6">Funcionário</th>
                                             <th className="py-4 px-6">Email</th>
                                             <th className="py-4 px-6">Cargo (Role)</th>
@@ -113,14 +116,39 @@ export default function UsersPage() {
                                     <tbody className="divide-y divide-gray-200 text-sm">
                                         {filteredUsers.map((u) => (
                                             <tr key={u.id} className="hover:bg-gray-50/50 transition">
-                                                {/* Coluna 1: Nome com Avatar */}
+                                                {/* Coluna 0: Foto */}
                                                 <td className="py-4 px-6">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold shrink-0">
-                                                            {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                                                    <div className="w-10 h-10 bg-gray-100 rounded-full overflow-hidden border border-gray-200 flex items-center justify-center shrink-0 relative">
+                                                        {/* Se tiver image_url válida, tenta carregar */}
+                                                        {u.image_url && u.image_url.trim() !== "" ? (
+                                                            <img 
+                                                                src={`${API_URL}${u.image_url}`} 
+                                                                alt={u.name} 
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    // Esconde a imagem quebrada e mostra o ícone logo abaixo
+                                                                    e.currentTarget.style.display = 'none';
+                                                                    const fallback = e.currentTarget.nextElementSibling;
+                                                                    if (fallback) {
+                                                                        (fallback as HTMLElement).style.display = 'flex';
+                                                                    }
+                                                                }}
+                                                            />
+                                                        ) : null}
+
+                                                        {/* Ícone de Fallback (Fica oculto por padrão se houver imagem, mas aparece se a imagem falhar ou não existir) */}
+                                                        <div 
+                                                            className="absolute inset-0 flex items-center justify-center bg-gray-100" 
+                                                            style={{ display: (u.image_url && u.image_url.trim() !== "") ? 'none' : 'flex' }}
+                                                        >
+                                                            <CircleUserRound size={24} className="text-gray-400" />
                                                         </div>
-                                                        <span className="font-medium text-gray-900">{u.name}</span>
                                                     </div>
+                                                </td>
+
+                                                {/* Coluna 1: Nome */}
+                                                <td className="py-4 px-6">
+                                                    <span className="font-medium text-gray-900">{u.name}</span>
                                                 </td>
 
                                                 {/* Coluna 2: Email */}
@@ -145,7 +173,7 @@ export default function UsersPage() {
                                                     </span>
                                                 </td>
 
-                                                {/* Coluna 4: Ações (Centralizadas) */}
+                                                {/* Coluna 4: Ações (Excluir apenas para admin) */}
                                                 <td className="py-4 px-6 text-center">
                                                     <div className="flex items-center justify-center gap-1">
                                                         <button 
@@ -155,13 +183,16 @@ export default function UsersPage() {
                                                         >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button 
-                                                            title="Eliminar"
-                                                            onClick={() => setDeletingUser(u)}
-                                                            className="cursor-pointer p-2 text-red-600 hover:text-red-800 hover:bg-red-50/50 rounded-lg transition"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
+
+                                                        {user?.role === 'admin' && (
+                                                            <button 
+                                                                title="Eliminar"
+                                                                onClick={() => setDeletingUser(u)}
+                                                                className="cursor-pointer p-2 text-red-600 hover:text-red-800 hover:bg-red-50/50 rounded-lg transition"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -181,8 +212,16 @@ export default function UsersPage() {
                                     {/* Linha superior: Avatar, Nome e Cargo */}
                                     <div className="flex justify-between items-start gap-3">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold shrink-0 text-base">
-                                                {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center shrink-0">
+                                                {u.image_url ? (
+                                                    <img 
+                                                        src={`${API_URL}${u.image_url}`} 
+                                                        alt={u.name} 
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <CircleUserRound size={28} className="text-gray-400" />
+                                                )}
                                             </div>
                                             <div className="min-w-0">
                                                 <h3 className="font-bold text-slate-900 text-base truncate">{u.name}</h3>
@@ -206,7 +245,7 @@ export default function UsersPage() {
                                         </span>
                                     </div>
 
-                                    {/* Linha inferior: Ações de Editar / Excluir */}
+                                    {/* Linha inferior: Ações de Editar / Excluir (Excluir apenas para admin) */}
                                     <div className="flex justify-end items-center pt-3 border-t border-slate-200 gap-2">
                                         <button 
                                             onClick={() => setEditingUser(u)}
@@ -215,13 +254,16 @@ export default function UsersPage() {
                                         >
                                             <Edit size={14} /> Editar
                                         </button>
-                                        <button 
-                                            onClick={() => setDeletingUser(u)}
-                                            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-xs font-medium border border-red-200"
-                                            title="Excluir"
-                                        >
-                                            <Trash2 size={14} /> Excluir
-                                        </button>
+
+                                        {user?.role === 'admin' && (
+                                            <button 
+                                                onClick={() => setDeletingUser(u)}
+                                                className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-xs font-medium border border-red-200"
+                                                title="Excluir"
+                                            >
+                                                <Trash2 size={14} /> Excluir
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
