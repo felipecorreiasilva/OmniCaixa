@@ -3,16 +3,15 @@ import { useRouter } from "expo-router";
 import { ArrowRight, Package, ShoppingCart, Sparkles, Users } from "lucide-react-native";
 import { useEffect } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context"; // Importação recomendada no Expo
 
 export default function DashboardHomePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Obtém as margens de segurança do dispositivo (notch e barra inferior)
 
   useEffect(() => {
-    // Nota: Em React Native puro, idealmente usarias o expo-secure-store ou AsyncStorage, 
-    // mas mantemos a lógica caso estejas a usar localStorage/token via contexto.
     const checkToken = async () => {
-      // Exemplo de verificação de segurança mobile
       if (!user) {
         router.replace("/(auth)/login");
       }
@@ -21,7 +20,14 @@ export default function DashboardHomePage() {
   }, [user]);
 
   return (
-    <ScrollView className="flex-1 bg-zinc-950" contentContainerStyle={{ padding: 16, paddingBottom: 30 }}>
+    <ScrollView 
+      className="flex-1 bg-zinc-950" 
+      contentContainerStyle={{ 
+        padding: 16, 
+        // Soma o padding padrão (30) com o espaço dinâmico da barra inferior do telemóvel
+        paddingBottom: 40 + insets.bottom 
+      }}
+    >
       
       {/* Cabeçalho de Boas-vindas com Estilo Dark Moderno */}
       <View className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 shadow-sm flex-col gap-4 relative overflow-hidden mb-6">
