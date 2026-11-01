@@ -144,7 +144,7 @@ export default function PDVPage() {
         items: cart.map(item => ({
           product_id: item.id,
           quantity: item.quantity,
-          price: item.price
+          unit_price: item.price
         }))
       };
 
