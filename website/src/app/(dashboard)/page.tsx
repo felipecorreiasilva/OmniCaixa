@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { ShoppingCart, Package, Users, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ShoppingCart, Package, Users, FileText, ArrowRight, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { tokenService } from '@/services/tokenService';
@@ -11,14 +11,14 @@ export default function DashboardHomePage() {
   const { user } = useAuth();
   const router = useRouter();
   
-    useEffect(() => {
-        const token = localStorage.getItem('token');
+  useEffect(() => {
+      const token = localStorage.getItem('token');
 
-        if (!tokenService.isTokenValid(token)) {
-            localStorage.removeItem('token');
-            router.push('/login');
-        }
-    }, [router]);
+      if (!tokenService.isTokenValid(token)) {
+          localStorage.removeItem('token');
+          router.push('/login');
+      }
+  }, [router]);
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-zinc-950 min-h-screen text-zinc-100">
@@ -43,7 +43,7 @@ export default function DashboardHomePage() {
       {/* Atalhos Rápidos / Cards de Navegação */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-200 tracking-tight">Acesso Rápido</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Card PDV */}
           <Link
@@ -101,6 +101,26 @@ export default function DashboardHomePage() {
             </div>
             <div className="mt-8 flex items-center gap-2 text-xs font-bold text-zinc-400 group-hover:text-cyan-400 transition">
               <span>Ver Funcionários</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+            </div>
+          </Link>
+
+          {/* Card Histórico de Vendas (Último) */}
+          <Link
+            href="/sales"
+            className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 hover:border-cyan-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+          >
+            <div>
+              <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-400 mb-5 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-zinc-950 transition-all duration-300 shadow-sm">
+                <FileText size={26} />
+              </div>
+              <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition">Histórico de Vendas</h3>
+              <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
+                Consultar transações anteriores, verificar detalhes de itens e gerir cancelamentos com reposição.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-2 text-xs font-bold text-zinc-400 group-hover:text-cyan-400 transition">
+              <span>Ver Vendas</span>
               <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
             </div>
           </Link>
