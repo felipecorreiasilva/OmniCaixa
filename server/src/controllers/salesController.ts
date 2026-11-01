@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { SaleModel } from '../models/salesModel';
 
 export const SalesController = {
-    async createSale(req: Request, res: Response){
+    // ==========================================
+    // CREATE (Criar Nova Venda / PDV)
+    // ==========================================
+    async createSale(req: Request, res: Response) {
         try {
             const { payment_method, total_amount, amount_paid, change, items, txid } = req.body;
 
@@ -42,9 +45,59 @@ export const SalesController = {
             } else {
                 return res.status(500).json({ error: 'Falha ao criar a venda.' });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Erro ao criar venda:", error);
-            return res.status(500).json({ error: 'Erro interno do servidor.' });
+            return res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+        }
+    },
+
+    // ==========================================
+    // READ (Listar Todas as Vendas)
+    // ==========================================
+    async getAllSales(req: Request, res: Response) {
+        try {
+            const sales = await SaleModel.findAll();
+            return res.status(200).json(sales);
+        } catch (error) {
+            console.error("Erro ao listar vendas:", error);
+            return res.status(500).json({ error: 'Erro interno ao buscar as vendas.' });
+        }
+    },
+
+    // ==========================================
+    // READ (Buscar Venda por ID com Itens)
+    // ==========================================
+    async getSaleById(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const sale = await SaleModel.findById(Number(id));
+
+            if (!sale) {
+                return res.status(404).json({ error: 'Venda não encontrada.' });
+            }
+
+            return res.status(200).json(sale);
+        } catch (error) {
+            console.error("Erro ao buscar venda por ID:", error);
+            return res.status(500).json({ error: 'Erro interno ao buscar detalhes da venda.' });
+        }
+    },
+
+    // ==========================================
+    // DELETE / CANCELAR (Cancela Venda e Repõe Stock)
+    // ==========================================
+    async cancelSale(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            await SaleModel.cancel(Number(id));
+
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Venda cancelada com sucesso e estoque reposto.' 
+            });
+        } catch (error: any) {
+            console.error("Erro ao cancelar venda:", error);
+            return res.status(400).json({ error: error.message || 'Erro ao cancelar a venda.' });
         }
     }
-}
+};

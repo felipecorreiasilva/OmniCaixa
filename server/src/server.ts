@@ -32,5 +32,5 @@ app.get('/', (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.listen(PORT, HOST, () => {
-  console.log(`🔥 Servidor executando na rede em http://${HOST}:${PORT} (ou http://192.168.2.107:${PORT})`);
+  console.log(`🔥 Servidor executando na rede em http://${HOST}:${PORT}`);
 });
