@@ -31,6 +31,7 @@ export default function PDVPage() {
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
   // Validação do token e carregamento condicionado ao utilizador
+  // Validação do token e carregamento condicionado ao utilizador
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -142,11 +143,11 @@ export default function PDVPage() {
         total_amount: totalCart,
         amount_paid: amountPaid,
         change: change,
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           product_id: item.id,
           quantity: item.quantity,
-          price: item.price
-        }))
+          unit_price: item.price,
+        })),
       };
 
       // Grava efetivamente no banco de dados MySQL através da API
