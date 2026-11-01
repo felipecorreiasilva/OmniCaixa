@@ -18,6 +18,17 @@ export interface SalePayload {
   created_at?: string;
 }
 
+export interface CreateSaleResponse {
+  message: string;
+  saleId: number;
+  status: string;
+}
+
+export interface CancelSaleResponse {
+  success: boolean;
+  message: string;
+}
+
 export const saleService = {
   // Obter todas as vendas
   async getAllSales(): Promise<SalePayload[]> {
@@ -32,13 +43,13 @@ export const saleService = {
   },
 
   // Criar nova venda (PDV)
-  async createSale(saleData: SalePayload) {
+  async createSale(saleData: SalePayload): Promise<CreateSaleResponse> {
     const response = await api.post("/sales", saleData);
     return response.data;
   },
 
   // Cancelar uma venda (reverte o stock e altera o status para CANCELADA)
-  async cancelSale(id: number) {
+  async cancelSale(id: number): Promise<CancelSaleResponse> {
     const response = await api.patch(`/sales/${id}/cancel`);
     return response.data;
   },
