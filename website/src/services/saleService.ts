@@ -18,6 +18,12 @@ export interface SalePayload {
   created_at?: string;
 }
 
+export interface CreateSaleResponse {
+  message: string;
+  saleId: number;
+  status: string;
+}
+
 export const saleService = {
   // Obter todas as vendas
   async getAllSales(): Promise<SalePayload[]> {
@@ -32,14 +38,14 @@ export const saleService = {
   },
 
   // Criar nova venda (PDV)
-  async createSale(saleData: SalePayload) {
+  async createSale(saleData: SalePayload): Promise<CreateSaleResponse> {
     const response = await api.post("/sales", saleData);
     return response.data;
   },
 
   // Cancelar uma venda (reverte o stock e altera o status para CANCELADA)
-  async cancelSale(id: number) {
-    const response = await api.patch(`/sales/${id}/cancel`); // Ajusta a rota conforme o teu controller no backend (ex: patch ou delete)
+  async cancelSale(id: number): Promise<{ success: boolean }> {
+    const response = await api.patch(`/sales/${id}/cancel`);
     return response.data;
   },
 };
