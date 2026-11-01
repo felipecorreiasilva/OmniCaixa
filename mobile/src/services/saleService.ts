@@ -52,5 +52,5 @@ export const saleService = {
   async cancelSale(id: number): Promise<CancelSaleResponse> {
     const response = await api.patch(`/sales/${id}/cancel`);
     return response.data;
-  },
+  }
 };

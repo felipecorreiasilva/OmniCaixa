@@ -24,6 +24,11 @@ export interface CreateSaleResponse {
   status: string;
 }
 
+export interface CancelSaleResponse {
+  success: boolean;
+  message: string;
+}
+
 export const saleService = {
   // Obter todas as vendas
   async getAllSales(): Promise<SalePayload[]> {
@@ -44,8 +49,8 @@ export const saleService = {
   },
 
   // Cancelar uma venda (reverte o stock e altera o status para CANCELADA)
-  async cancelSale(id: number): Promise<{ success: boolean }> {
+  async cancelSale(id: number): Promise<CancelSaleResponse> {
     const response = await api.patch(`/sales/${id}/cancel`);
     return response.data;
-  },
+  }
 };
